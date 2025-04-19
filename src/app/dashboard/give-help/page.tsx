@@ -1,20 +1,135 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUp, HelpCircle, Info } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ArrowUp, Info } from "lucide-react";
 import Link from "next/link";
+import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useAuth } from "@/context/AuthContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+// ----------------------------------------------------------------------------------
+// Type for Help Requests
+// ----------------------------------------------------------------------------------
+type HelpRequest = {
+  id: number;
+  memberId: string;
+  uplinerLevel: number;
+  uplinerMemberId: string;
+  uplinerName: string;
+  levelAmount: number;
+  uplinerMobileNo: string;
+  status?: "NOT SENT" | "SUBMITTED" | "SENT";
+  proofUrl?: string;
+  transactionReferenceId?: string;
+};
 
 export default function GiveHelpPage() {
-  // Mock data for available help requests
-  const helpRequests = [
-    { id: "REQ001", name: "Sarah Williams", amount: "$500", reason: "Medical Expenses", date: "2024-04-08", urgency: "High" },
-    { id: "REQ002", name: "Michael Brown", amount: "$350", reason: "Education Fees", date: "2024-04-07", urgency: "Medium" },
-    { id: "REQ003", name: "Emma Davis", amount: "$200", reason: "Utility Bills", date: "2024-04-06", urgency: "Medium" },
-    { id: "REQ004", name: "John Smith", amount: "$750", reason: "Business Support", date: "2024-04-05", urgency: "Low" },
-    { id: "REQ005", name: "Lisa Johnson", amount: "$300", reason: "Housing Assistance", date: "2024-04-04", urgency: "High" },
-  ];
+  const [helpRequests, setHelpRequests] = useState<HelpRequest[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<HelpRequest | null>(null);
+  const [senderId, setSenderId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [popupData, setPopupData] = useState<{
+    receiverId: string;
+    transactionReferenceId: string;
+    paymentStatus: string;
+  } | null>(null);
+  const [errorPopup, setErrorPopup] = useState<string | null>(null);
+  const authFetch = useAuthFetch();
+  const { memberId } = useAuth();
+
+  useEffect(() => {
+    if (!memberId) return;
+    const fetchHelpRequests = async () => {
+      try {
+        const response = await authFetch(
+          `http://localhost:9090/api/${memberId}/upliners`,
+          { method: "GET" },
+          true
+        );
+        const data: HelpRequest[] = await response.json();
+        const initialized: HelpRequest[] = data.map((req: Omit<HelpRequest, "status">) => ({
+          ...req,
+          status: "NOT SENT"
+        }));
+        setHelpRequests(initialized);
+      } catch (err) {
+        console.error("Error fetching help requests:", err);
+        setErrorPopup("Failed to load help requests. Try again later.");
+      }
+    };
+    fetchHelpRequests();
+  }, [memberId]);
+
+  const openHelpModal = (request: HelpRequest) => {
+    setSelectedRequest(request);
+    setSenderId(memberId || "");
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedRequest || !file) return;
+  
+    const formData = new FormData();
+    formData.append("ofaMemberId", senderId);
+    formData.append("receiverMemberId", selectedRequest.uplinerMemberId);
+    formData.append("receiverMobile", selectedRequest.uplinerMobileNo);
+    formData.append("submittedAmount", String(selectedRequest.levelAmount)); // ✅ backend expects this
+    formData.append("uplinerLevel", String(selectedRequest.uplinerLevel));
+    formData.append("proofUrl", file); // ✅ file field stays same
+  
+    try {
+      const response = await authFetch("http://localhost:9090/api/help/give", {
+        method: "POST",
+        body: formData,
+      }, true);
+  
+      const json = await response.json();
+  
+      if (!response.ok) {
+        // 🔴 Extract backend error if available
+      const backendMessage =
+      json?.messageText ||
+      json?.errorDetails?.description ||
+      "Help submission failed. Please try again.";
+    setErrorPopup(backendMessage);
+    return;
+      }
+  
+      const record = json.message?.[0]?.data;
+      if (record?.submissionReferenceId) {
+        setPopupData({
+          receiverId: record.receiverMemberId,
+          transactionReferenceId: record.submissionReferenceId,
+          paymentStatus: record.submissionStatus,
+        });
+      } else {
+        setErrorPopup("No transaction reference ID returned. Upload may have failed.");
+      }
+  
+    } catch (error) {
+      console.error("Unexpected error submitting help:", error);
+      setErrorPopup("Something went wrong. Please try again later.");
+    } finally {
+      setModalOpen(false);
+    }
+  };
+  
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Give Help</h1>
@@ -26,20 +141,17 @@ export default function GiveHelpPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Stats */}
+      <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-2">
         <Card>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-4">
             <CardTitle>Available Balance</CardTitle>
             <CardDescription>Your current balance available for giving help</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-4xl font-bold">$2,500</p>
-            <p className="text-sm text-muted-foreground mt-1">Last updated: Today, 10:45 AM</p>
+            <p className="text-4xl font-bold">₹2,500</p>
+            <p className="text-sm text-muted-foreground mt-1">Last updated: Today</p>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline">Add Funds</Button>
-            <Button className="btn-primary">Give Help</Button>
-          </CardFooter>
         </Card>
 
         <Card>
@@ -51,11 +163,11 @@ export default function GiveHelpPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm">Total Help Given:</span>
-                <span className="font-medium">$12,345</span>
+                <span className="font-medium">₹12,345</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">This Month:</span>
-                <span className="font-medium">$1,500</span>
+                <span className="font-medium">₹1,500</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Pending Requests:</span>
@@ -73,102 +185,60 @@ export default function GiveHelpPage() {
             </Link>
           </CardFooter>
         </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Quick Help</CardTitle>
-            <CardDescription>Help someone directly</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-3">
-              <div>
-                <label className="text-sm font-medium">Recipient ID</label>
-                <input
-                  type="text"
-                  placeholder="Enter recipient ID"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Amount ($)</label>
-                <input
-                  type="number"
-                  min="10"
-                  placeholder="Enter amount"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Message (Optional)</label>
-                <textarea
-                  placeholder="Write a message"
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                ></textarea>
-              </div>
-            </form>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full btn-primary">Send Help</Button>
-          </CardFooter>
-        </Card>
       </div>
 
+      {/* Info Box */}
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 flex items-start">
         <Info className="h-5 w-5 text-blue-500 mr-3 mt-0.5" />
         <div>
           <h3 className="font-medium">How Giving Help Works</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            When you give help, the funds are transferred to the recipient's account after a review process.
-            You can track all your help transactions in your history.
-            A small service fee of 2% is applied to each help transaction.
+            Below section shows upliners to whom you should send money via UPI. Upload payment proof (PDF/image).
+            We are not responsible for any direct loss/fraud as transactions are one-to-one.
           </p>
         </div>
       </div>
 
+      {/* Help Requests Table */}
       <Card>
         <CardHeader>
           <CardTitle>Help Requests</CardTitle>
-          <CardDescription>People currently seeking help</CardDescription>
+          <CardDescription>These upliners are eligible to receive help</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
             <div className="w-full overflow-auto">
-              <table className="w-full caption-bottom text-sm">
-                <thead className="[&_tr]:border-b">
-                  <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                    <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Name</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Reason</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Urgency</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2">Level</th>
+                    <th className="px-4 py-2">Upliner ID</th>
+                    <th className="px-4 py-2">Name</th>
+                    <th className="px-4 py-2">Mobile</th>
+                    <th className="px-4 py-2">Amount</th>
+                    <th className="px-4 py-2">Status</th>
+                    <th className="px-4 py-2">Proof</th>
+                    <th className="px-4 py-2">Action</th>
                   </tr>
                 </thead>
-                <tbody className="[&_tr:last-child]:border-0">
-                  {helpRequests.map((request) => (
-                    <tr
-                      key={request.id}
-                      className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                    >
-                      <td className="p-4 align-middle">{request.id}</td>
-                      <td className="p-4 align-middle">{request.name}</td>
-                      <td className="p-4 align-middle">{request.amount}</td>
-                      <td className="p-4 align-middle">{request.reason}</td>
-                      <td className="p-4 align-middle">{request.date}</td>
-                      <td className="p-4 align-middle">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          request.urgency === "High"
-                            ? "bg-red-100 text-red-800"
-                            : request.urgency === "Medium"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                        }`}>
-                          {request.urgency}
-                        </span>
+                <tbody>
+                  {helpRequests.map((req) => (
+                    <tr key={req.id}>
+                      <td className="px-4 py-2">{req.uplinerLevel}</td>
+                      <td className="px-4 py-2">{req.uplinerMemberId}</td>
+                      <td className="px-4 py-2">{req.uplinerName}</td>
+                      <td className="px-4 py-2">{req.uplinerMobileNo}</td>
+                      <td className="px-4 py-2">{req.levelAmount}</td>
+                      <td className="px-4 py-2">{req.status}</td>
+                      <td className="px-4 py-2">
+                        {req.proofUrl ? (
+                          <a href={req.proofUrl} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">N/A</span>
+                        )}
                       </td>
-                      <td className="p-4 align-middle">
-                        <Button variant="outline" size="sm">
+                      <td className="px-4 py-2">
+                        <Button variant="outline" size="sm" onClick={() => openHelpModal(req)}>
                           Help
                         </Button>
                       </td>
@@ -181,53 +251,73 @@ export default function GiveHelpPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Frequently Asked Questions</CardTitle>
-          <CardDescription>Common questions about giving help</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              How much can I give?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              You can give any amount starting from $10 up to your available balance. For amounts over $1,000, additional verification may be required.
-            </p>
-          </div>
+      {/* Help Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Submit Help Payment</DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4">
+              <Input disabled value={selectedRequest.uplinerLevel} />
+              <Input disabled value={selectedRequest.uplinerMemberId} />
+              <Input disabled value={selectedRequest.uplinerName} />
+              <Input disabled value={selectedRequest.uplinerMobileNo} />
+              <Input disabled value={selectedRequest.levelAmount} />
+              <Input value={senderId} onChange={(e) => setSenderId(e.target.value)} />
+              <Input type="file" accept=".pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+              <div className="flex justify-end">
+                <Button onClick={handleSubmit} disabled={!file || !senderId}>Submit Help</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              Is my information secure?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              All your personal and payment information is encrypted and securely stored. We never share your details with recipients or third parties.
-            </p>
+      {/* ✅ Success Dialog */}
+      <Dialog open={!!popupData} onOpenChange={(open) => !open && setPopupData(null)}>
+        <DialogContent className="max-w-md border-green-600 border-2">
+          <DialogHeader>
+            <DialogTitle className="text-green-600">✅ Help Submitted Successfully</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <p><strong>Receiver ID:</strong> {popupData?.receiverId}</p>
+            <p><strong>Transaction ID:</strong> {popupData?.transactionReferenceId}</p>
+            <p><strong>Status:</strong> {popupData?.paymentStatus}</p>
           </div>
+          <div className="flex justify-end pt-4">
+            <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => {
+              if (popupData) {
+                const updated = helpRequests.map((req) => {
+                  if (req.uplinerMemberId === popupData.receiverId) {
+                    return {
+                      ...req,
+                      status: popupData.paymentStatus as HelpRequest["status"],
+                      transactionReferenceId: popupData.transactionReferenceId,
+                    };
+                  }
+                  return req;
+                });
+                setHelpRequests(updated);
+              }
+              setPopupData(null);
+            }}>OK</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              Can I get a refund?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              Once help is given and accepted by the recipient, it cannot be refunded. Please ensure you're giving help to the correct recipient.
-            </p>
+      {/* ❌ Error Dialog */}
+      <Dialog open={!!errorPopup} onOpenChange={() => setErrorPopup(null)}>
+        <DialogContent className="max-w-md border-red-600 border-2">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">❌ Submission Failed</DialogTitle>
+          </DialogHeader>
+          <div className="text-sm text-red-700">{errorPopup}</div>
+          <div className="flex justify-end pt-4">
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={() => setErrorPopup(null)}>Close</Button>
           </div>
-
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              How are recipients verified?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              All recipients undergo a verification process to ensure legitimacy. This includes identity verification and review of help requests.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

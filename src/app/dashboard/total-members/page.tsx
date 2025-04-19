@@ -17,18 +17,19 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Calendar, Download, Filter, Search } from "lucide-react";
 
 export default function TotalMembersPage() {
-  const { memberId } = useAuth();
+  const { memberId ,isAuthReady} = useAuth();
   const authFetch = useAuthFetch();
   const [hierarchyData, setHierarchyData] = useState<any | null>(null);
   const [orientation, setOrientation] = useState<"vertical" | "horizontal">("vertical");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "complete" | "partial" | "not-filled">("all");
+  
 
   /**
    * Fetch the downliner hierarchy when memberId becomes available
    */
   useEffect(() => {
-    if (!memberId) return;
+    if (!isAuthReady || !memberId) return;
 console.log("member id:",memberId);
     const fetchHierarchy = async () => {
       try {
@@ -41,7 +42,7 @@ console.log("member id:",memberId);
     };
 
     fetchHierarchy();
-  }, [memberId]);
+  }, [isAuthReady,memberId]);
 // 🔍 Recursive filter logic for search & status
 const filterHierarchy = (node: any): any | null => {
   const matchesSearch =

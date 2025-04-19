@@ -73,7 +73,15 @@ const res = await fetch("http://localhost:9090/oauth2/token", {
  * This token is obtained during login and stored via setUserToken().
  */
 export const getUserToken = (): string | null => {
-  return userToken;
+  if (userToken) return userToken;
+
+  const stored = sessionStorage.getItem("userToken");
+  if (stored) {
+    userToken = stored;
+    return stored;
+  }
+
+  return null;
 };
 
 /**
@@ -86,6 +94,7 @@ export const getUserToken = (): string | null => {
  */
 export const setUserToken = (token: string) => {
   userToken = token;
+  sessionStorage.setItem("userToken", token); // ✅ Persist
 };
 
 /**
@@ -97,12 +106,25 @@ export const setUserToken = (token: string) => {
 export const clearTokens = () => {
   clientToken = null;
   userToken = null;
+  memberId = null; // 🧠 Clear memberId from memory
+  sessionStorage.removeItem("userToken");
+  sessionStorage.removeItem("memberId");
 };
 
 export const setMemberId = (id: string) => {
   memberId = id;
+  sessionStorage.setItem("memberId", id); // 🧠 Save to sessionStorage
 };
 
 export const getMemberId = (): string | null => {
-  return memberId;
+  if (memberId) return memberId;
+
+  // ⏪ Fallback to sessionStorage if memory is wiped on reload
+  const stored = sessionStorage.getItem("memberId");
+  if (stored) {
+    memberId = stored;
+    return memberId;
+  }
+
+  return null;
 };

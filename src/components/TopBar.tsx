@@ -1,3 +1,8 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext"; // ✅ For memberId & auth control
+import { clearTokens } from "@/utils/tokenService"; // ✅ Custom token cleanup// ✅ You should have this already
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,12 +13,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Menu, User } from "lucide-react";
+import { Bell, Menu, User, LogOut } from "lucide-react";
 
 export function TopBar() {
+  const router = useRouter();
+  const { logout } = useAuth(); // logout method from AuthContext
+
+  // Handle logout: clear tokens and redirect to login
+  const handleLogout = () => {
+    clearTokens(); // clears both client & user tokens
+    logout(); // optional: clear user state from context
+    router.push("/logout"); // redirect to logout page
+  };
+
   return (
     <header className="border-b bg-white p-4 sticky top-0 z-10">
       <div className="flex items-center justify-between">
+        {/* Logo for mobile view */}
         <div className="flex items-center md:hidden">
           <Button variant="ghost" size="icon" className="mr-2">
             <Menu className="h-5 w-5" />
@@ -26,10 +42,11 @@ export function TopBar() {
           </span>
         </div>
 
+        {/* Notifications & Avatar */}
         <div className="flex items-center ml-auto">
           <Button variant="ghost" size="icon" className="mr-2 relative">
             <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 bg-red-500 rounded-full w-2 h-2"></span>
+            <span className="absolute top-1 right-1 bg-red-500 rounded-full w-2 h-2" />
             <span className="sr-only">Notifications</span>
           </Button>
 
@@ -41,16 +58,30 @@ export function TopBar() {
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+
+              {/* ✅ Profile - Navigate to account page */}
+              <DropdownMenuItem onClick={() => router.push("/dashboard/my-account")}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+
+              {/* Optional settings item */}
+              {/* <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem> */}
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+
+              {/* ✅ Logout */}
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

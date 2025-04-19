@@ -88,11 +88,17 @@ export const useAuthFetch = () => {
     const baseHeaders = normalizeHeaders(options.headers);
 
     /// Inject defaults only if not already provided (don't overwrite custom headers like "roles")
-if (!("Content-Type" in baseHeaders)) {
-  baseHeaders["Content-Type"] = "application/json";
-}
-if (!("Accept" in baseHeaders)) {
-  baseHeaders["Accept"] = "application/json";
+// 🔍 Check if body is FormData
+const isFormData = options.body instanceof FormData;
+
+// 🚫 Do NOT set Content-Type manually for FormData
+if (!isFormData) {
+  if (!("Content-Type" in baseHeaders)) {
+    baseHeaders["Content-Type"] = "application/json";
+  }
+  if (!("Accept" in baseHeaders)) {
+    baseHeaders["Accept"] = "application/json";
+  }
 }
 
 

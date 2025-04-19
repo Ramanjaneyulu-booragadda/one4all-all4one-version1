@@ -1,3 +1,4 @@
+"use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -12,8 +13,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import TotalMembersPage from "./total-members/page";
-
+import { useAuth } from "@/context/AuthContext"; // Add this import
 export default function DashboardPage() {
+  const { isAuthReady } = useAuth(); // Use auth readiness state
+
+  if (!isAuthReady) {
+    return (
+      <div className="flex justify-center items-center h-screen text-muted-foreground">
+        Loading dashboard...
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

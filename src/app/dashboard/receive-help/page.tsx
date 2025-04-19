@@ -1,21 +1,77 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowDown, HelpCircle, Info, Clock } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { ArrowDown, Clock, Info } from "lucide-react";
 import Link from "next/link";
+
+interface ReceivedHelp {
+  id: string;
+  name: string;
+  amount: string;
+  date: string;
+  status: "PROCESSING" | "RECEIVED" | "NOT RECEIVED";
+  proofUrl?: string;
+}
 
 export default function ReceiveHelpPage() {
   // Mock data for help requests and active help
-  const helpRequests = [
-    { id: "REQ101", amount: "$500", reason: "Education Support", date: "2024-04-05", status: "Pending" },
-    { id: "REQ098", amount: "$350", reason: "Medical Expenses", date: "2024-04-01", status: "Approved" },
-    { id: "REQ087", amount: "$200", reason: "Housing Assistance", date: "2024-03-28", status: "Fulfilled" },
-  ];
+  const [helpList, setHelpList] = useState<ReceivedHelp[]>([
+    {
+      id: "AH001",
+      name: "Alex Thompson",
+      amount: "$250",
+      date: "2024-04-07",
+      status: "PROCESSING",
+      proofUrl: "https://via.placeholder.com/150",
+    },
+    {
+      id: "AH002",
+      name: "Maria Garcia",
+      amount: "$500",
+      date: "2024-04-06",
+      status: "RECEIVED",
+      proofUrl: "https://via.placeholder.com/150",
+    },
+  ]);
 
-  const activeHelp = [
-    { id: "AH001", name: "Alex Thompson", amount: "$250", date: "2024-04-07", status: "Processing" },
-    { id: "AH002", name: "Maria Garcia", amount: "$500", date: "2024-04-06", status: "Completed" },
-  ];
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selected, setSelected] = useState<ReceivedHelp | null>(null);
+  const [status, setStatus] = useState<"PROCESSING" | "RECEIVED" | "NOT RECEIVED">("PROCESSING");
+  const [comments, setComments] = useState("");
+  
+  
+  const openModal = (entry: ReceivedHelp) => {
+    setSelected(entry);
+    setStatus(entry.status);
+    setModalOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (!selected) return;
+    const updatedList = helpList.map((item) =>
+      item.id === selected.id ? { ...item, status } : item
+    );
+    setHelpList(updatedList);
+    setModalOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -115,157 +171,18 @@ export default function ReceiveHelpPage() {
         <div>
           <h3 className="font-medium">How Receiving Help Works</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            When you request help, your request is reviewed and then made available to potential givers.
-            Once approved, your request will be visible to the community.
-            Help received will be transferred to your account after verification.
+            When you receive help, your have to verfy the proof and then change the status to "Received" or "Not Received" and click submit buttun with some comments.
+            Note since the transactions are made directly via one to one through UPI payments, we are not responsible for any loss of money or any frauds.
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="new-request" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="new-request">New Request</TabsTrigger>
-          <TabsTrigger value="your-requests">Your Requests</TabsTrigger>
-          <TabsTrigger value="active-help">Active Help</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="new-request" className="space-y-4">
+      
+        
+        
           <Card>
             <CardHeader>
-              <CardTitle>Request Help</CardTitle>
-              <CardDescription>Fill out the form to request help from the community</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="text-sm font-medium">Amount Needed ($)</label>
-                    <input
-                      type="number"
-                      min="10"
-                      placeholder="Enter amount"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Minimum $10, maximum $1,500 per request
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Category</label>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                    >
-                      <option value="">Select a category</option>
-                      <option value="medical">Medical Expenses</option>
-                      <option value="education">Education Support</option>
-                      <option value="housing">Housing Assistance</option>
-                      <option value="business">Business Support</option>
-                      <option value="utilities">Utility Bills</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Reason for Request</label>
-                  <textarea
-                    placeholder="Explain why you need help"
-                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
-                  ></textarea>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Be specific about your needs to increase chances of receiving help
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Urgency Level</label>
-                  <div className="flex gap-4 mt-1">
-                    <label className="flex items-center space-x-2">
-                      <input type="radio" name="urgency" value="low" className="h-4 w-4" />
-                      <span className="text-sm">Low</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="radio" name="urgency" value="medium" className="h-4 w-4" />
-                      <span className="text-sm">Medium</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="radio" name="urgency" value="high" className="h-4 w-4" />
-                      <span className="text-sm">High</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200">
-                  <p className="text-sm text-yellow-800">
-                    <strong>Note:</strong> All help requests are reviewed by our team. Providing accurate information increases your chances of approval. Misuse of the platform may result in account suspension.
-                  </p>
-                </div>
-              </form>
-            </CardContent>
-            <CardFooter className="flex justify-end space-x-2">
-              <Button variant="outline">Cancel</Button>
-              <Button className="btn-primary">Submit Request</Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="your-requests" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Help Requests</CardTitle>
-              <CardDescription>Track your submitted help requests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <div className="w-full overflow-auto">
-                  <table className="w-full caption-bottom text-sm">
-                    <thead className="[&_tr]:border-b">
-                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                        <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Reason</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="[&_tr:last-child]:border-0">
-                      {helpRequests.map((request) => (
-                        <tr
-                          key={request.id}
-                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                        >
-                          <td className="p-4 align-middle">{request.id}</td>
-                          <td className="p-4 align-middle">{request.amount}</td>
-                          <td className="p-4 align-middle">{request.reason}</td>
-                          <td className="p-4 align-middle">{request.date}</td>
-                          <td className="p-4 align-middle">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                              request.status === "Pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : request.status === "Approved"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
-                            }`}>
-                              {request.status}
-                            </span>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <Button variant="outline" size="sm">
-                              View
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="active-help" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Help</CardTitle>
+              <CardTitle>Your Received Help Details</CardTitle>
               <CardDescription>Help that is currently being processed</CardDescription>
             </CardHeader>
             <CardContent>
@@ -282,89 +199,108 @@ export default function ReceiveHelpPage() {
                         <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="[&_tr:last-child]:border-0">
-                      {activeHelp.map((help) => (
-                        <tr
-                          key={help.id}
-                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    <tbody>
+                  {helpList.map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-4 py-2">{item.id}</td>
+                      <td className="px-4 py-2">{item.name}</td>
+                      <td className="px-4 py-2">{item.amount}</td>
+                      <td className="px-4 py-2">{item.date}</td>
+                      <td className="px-4 py-2">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            item.status === "PROCESSING"
+                              ? "bg-blue-100 text-blue-800"
+                              : item.status === "RECEIVED"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
                         >
-                          <td className="p-4 align-middle">{help.id}</td>
-                          <td className="p-4 align-middle">{help.name}</td>
-                          <td className="p-4 align-middle">{help.amount}</td>
-                          <td className="p-4 align-middle">{help.date}</td>
-                          <td className="p-4 align-middle">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                              help.status === "Processing"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-green-100 text-green-800"
-                            }`}>
-                              <Clock className="mr-1 h-3 w-3" />
-                              {help.status}
-                            </span>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <Button variant="outline" size="sm">
-                              Details
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+                          <Clock className="mr-1 h-3 w-3" />
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">
+                        {item.proofUrl ? (
+                          <a
+                            href={item.proofUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline text-sm"
+                          >
+                            Download
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        <Button variant="outline" size="sm" onClick={() => openModal(item)}>
+                          Details
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
                   </table>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        
+          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Review Help Payment</DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-4">
+              <div>
+                <Label>Transaction ID</Label>
+                <Input disabled value={selected.id} />
+              </div>
+              <div>
+                <Label>Sender</Label>
+                <Input disabled value={selected.name} />
+              </div>
+              <div>
+                <Label>Amount</Label>
+                <Input disabled value={selected.amount} />
+              </div>
+              <div>
+                <Label>Proof</Label>
+                <Input disabled value={selected.proofUrl || "Not Provided"} />
+              </div>
+              <div>
+                <Label>Status</Label>
+                <select
+                  className="border rounded-md px-3 py-2 w-full text-sm"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as any)}
+                >
+                  <option value="RECEIVED">RECEIVED</option>
+                  <option value="NOT RECEIVED">NOT RECEIVED</option>
+                </select>
+              </div>
+              <div>
+                <Label>Comments</Label>
+                <Textarea
+                  placeholder="Enter any comments..."
+                  required
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleSubmit} disabled={!comments}>
+                  Submit
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Frequently Asked Questions</CardTitle>
-          <CardDescription>Common questions about receiving help</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              How much help can I request?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              You can request up to $1,500 per month. Individual requests can be for any amount between $10 and $1,500.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              How long does approval take?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              Most requests are reviewed within 24-48 hours. Urgent requests may be expedited.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              Is there a fee for receiving help?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              No, there are no fees for receiving help. However, there may be a small processing fee for withdrawals depending on your withdrawal method.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-medium flex items-center">
-              <HelpCircle className="h-4 w-4 mr-2 text-blue-500" />
-              What if my request is not fulfilled?
-            </h3>
-            <p className="text-sm text-muted-foreground pl-6">
-              If your request is not fulfilled within 30 days, you can update it or create a new request. We cannot guarantee that all requests will be fulfilled.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

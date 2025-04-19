@@ -44,6 +44,7 @@ interface AuthContextType {
   userToken: string | null;
   memberId: string | null;
   isLoggedIn: boolean;
+  isAuthReady: boolean; // 👈 NEW!
   login: (token: string, memberId: string) => void;
   logout: () => void;
 }
@@ -59,7 +60,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userToken, setUserToken] = useState<string | null>(null);
   const [memberId, setMemberId] = useState<string | null>(null);
-
+  const [isAuthReady, setIsAuthReady] = useState(false); // 👈 NEW
   /**
    * Effect: On mount, preload the client token and restore user state from memory.
    */
@@ -79,6 +80,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const savedMemberId = getMemberId();
     if (savedUserToken) setUserToken(savedUserToken);
     if (savedMemberId) setMemberId(savedMemberId);
+    // ✅ We now know the auth state is restored
+    setIsAuthReady(true);
   }, []);
 
   /**
@@ -115,6 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         userToken,
         memberId,
         isLoggedIn: !!userToken,
+        isAuthReady,
         login,
         logout,
       }}
