@@ -1,77 +1,185 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ArrowDown, Clock, Info } from "lucide-react";
 import Link from "next/link";
+import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner"; // ✅ Using 'sonner' or your toast lib
 
 interface ReceivedHelp {
   id: string;
-  name: string;
-  amount: string;
-  date: string;
-  status: "PROCESSING" | "RECEIVED" | "NOT RECEIVED";
+  receivedFrom: string;
+  receivedAmount: string;
+  requestReceivedAt: string;
+  requestModifiedAt: string;
+  status: "PROCESSING" | "RECEIVED" | "NOT RECEIVED" ;
   proofUrl?: string;
+  transactionId: string;
+  verifiedBy?: string;
 }
 
+
+
 export default function ReceiveHelpPage() {
-  // Mock data for help requests and active help
-  const [helpList, setHelpList] = useState<ReceivedHelp[]>([
-    {
-      id: "AH001",
-      name: "Alex Thompson",
-      amount: "$250",
-      date: "2024-04-07",
-      status: "PROCESSING",
-      proofUrl: "https://via.placeholder.com/150",
-    },
-    {
-      id: "AH002",
-      name: "Maria Garcia",
-      amount: "$500",
-      date: "2024-04-06",
-      status: "RECEIVED",
-      proofUrl: "https://via.placeholder.com/150",
-    },
-  ]);
+  const authFetch = useAuthFetch();
+  const { memberId } = useAuth();
+
+  const [helpList, setHelpList] = useState<ReceivedHelp[]>([]);
+  const [summaryStats, setSummaryStats] = useState({
+    totalReceived: 0,
+    thisMonth: 0,
+    approved: 0,
+    rejected: 0,
+    totalReceivedRequestCount: 0,
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selected, setSelected] = useState<ReceivedHelp | null>(null);
   const [status, setStatus] = useState<"PROCESSING" | "RECEIVED" | "NOT RECEIVED">("PROCESSING");
   const [comments, setComments] = useState("");
-  
-  
+  const [successPopup, setSuccessPopup] = useState<string | null>(null);
+const [errorPopup, setErrorPopup] = useState<string | null>(null);
+
+  // 🔄 Fetch receive help data
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await authFetch(
+          `http://localhost:9090/api/help/receive-help/${memberId}`,
+          { method: "GET" },
+          true
+        );
+        const json = await response.json();
+
+        const detailList = json?.message?.[0]?.data?.records || [];
+        const summary = json?.message?.[0]?.data?.summary || {};
+
+        setHelpList(
+          detailList.map((item: any) => ({
+            id: item.paymentID,
+            transactionId: item.transactionId,
+            receivedFrom: item.receivedFrom,
+            receivedAmount: `₹${item.receivedAmount}`,
+            requestReceivedAt: item.requestReceivedAt?.split("T")[0],
+            requestModifiedAt: item.requestModifiedAt?.split("T")[0],
+            status: item.status,
+            proofUrl: item.proofUrl,
+            verifiedBy: item.verifiedBy, // ✅ Add this
+          }))
+        );
+
+        setSummaryStats({
+          totalReceived: summary.totalReceivedAmount || 0,
+          thisMonth: summary.thisMonthReceivedAmount || 0,
+          approved: summary.approvedRequestCount || 0,
+          rejected: summary.rejectedRequestCount || 0,
+          totalReceivedRequestCount: summary.totalReceivedRequestCount || 0,
+        });
+      } catch (err) {
+        console.error("Error fetching receive help data:", err);
+        setError("Unable to load receive help details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (memberId) fetchData();
+  }, [memberId]);
+
   const openModal = (entry: ReceivedHelp) => {
     setSelected(entry);
-    setStatus(entry.status);
+    setStatus("RECEIVED"); // or default to "RECEIVED"
     setModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    if (!selected) return;
-    const updatedList = helpList.map((item) =>
-      item.id === selected.id ? { ...item, status } : item
-    );
-    setHelpList(updatedList);
-    setModalOpen(false);
+  // ✅ Submit status verification
+  const handleSubmit = async () => {
+    if (!selected || !comments) return;
+
+    try {
+      const response = await authFetch(
+        "http://localhost:9090/api/help/verify",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            paymentId: selected.id,
+            status,
+            comments,
+          }),
+          headers: { "Content-Type": "application/json" },
+        },
+        true
+      );
+
+      const json = await response.json();
+
+  if (!response.ok) {
+    const backendMessage =
+      json?.messageText ||
+      json?.errorDetails?.description ||
+      "Help verification failed. Try again.";
+    setErrorPopup(backendMessage);
+    return;
+  }
+
+  const record = json?.message?.[0]?.data;
+
+if (record) {
+  setSuccessPopup(
+    `Help from ${record.senderMemberId} of ₹${record.submittedAmount} has been ${record.submissionStatus}. Verified by ${record.verifiedBy} on ${new Date(record.verificationDate).toLocaleString()}.`
+  );
+
+  // ✅ Update UI status to disable button later
+  const updatedList = helpList.map((item) =>
+    item.id === selected.id
+      ? {
+          ...item,
+          status: record.submissionStatus,
+          verifiedBy: record.verifiedBy,
+        }
+      : item
+  );
+  setHelpList(updatedList);
+  
+}
+
+  setModalOpen(false);
+  setComments("");
+    } catch (err) {
+      setErrorPopup("Verification failed. Try again later.");
+      console.error("Verification submit error:", err);
+    }
   };
+
+  // ⏳ While loading
+  if (loading) {
+    return <div className="text-center text-sm text-muted-foreground py-10">Loading your receive help data...</div>;
+  }
+
+  // ❌ On error
+  if (error) {
+    return (
+      <div className="text-center text-red-600 py-10">
+        {error} Please check your connection or try again later.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -86,33 +194,10 @@ export default function ReceiveHelpPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>Your Account Status</CardTitle>
-            <CardDescription>Current account eligibility</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Request Limit:</span>
-              <span className="font-medium">$1,500 / month</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Used This Month:</span>
-              <span className="font-medium">$850</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Available:</span>
-              <span className="font-medium text-green-600">$650</span>
-            </div>
-            <div className="mt-2 bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-blue-600 h-full rounded-full" style={{ width: '56%' }}></div>
-            </div>
-            <p className="text-xs text-muted-foreground text-center mt-1">56% of monthly limit used</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+        
 
-        <Card>
+      <Card>
           <CardHeader className="pb-3">
             <CardTitle>Help Statistics</CardTitle>
             <CardDescription>Your help receiving summary</CardDescription>
@@ -121,27 +206,26 @@ export default function ReceiveHelpPage() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm">Total Help Received:</span>
-                <span className="font-medium">$8,570</span>
+                <span className="font-medium">₹{summaryStats.totalReceived}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">This Month:</span>
-                <span className="font-medium">$850</span>
+                <span className="font-medium">₹{summaryStats.thisMonth}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm">Pending Requests:</span>
-                <span className="font-medium">2</span>
+                <span className="text-sm">Approved Request count:</span>
+                <span className="font-medium">{summaryStats.approved}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm">Completed Helps:</span>
-                <span className="font-medium">9</span>
+                <span className="text-sm">Rejected Request count:</span>
+                <span className="font-medium">{summaryStats.rejected}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">Total Received Request count:</span>
+                <span className="font-medium">{summaryStats.totalReceivedRequestCount}</span>
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Link href="/dashboard/receive-help-history" className="text-sm text-blue-600 hover:underline">
-              View Detailed History
-            </Link>
-          </CardFooter>
         </Card>
 
         <Card>
@@ -192,56 +276,64 @@ export default function ReceiveHelpPage() {
                     <thead className="[&_tr]:border-b">
                       <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                         <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">From</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">Received From</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">Received Amount</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">Transaction ID</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">Request Received At</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">Request Modified At</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">status Modified By</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">proof of Documents</th>
+                        <th className="h-12 px-4 text-left align-middle font-medium">Request Status</th>
                         <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                  {helpList.map((item) => (
-                    <tr key={item.id}>
-                      <td className="px-4 py-2">{item.id}</td>
-                      <td className="px-4 py-2">{item.name}</td>
-                      <td className="px-4 py-2">{item.amount}</td>
-                      <td className="px-4 py-2">{item.date}</td>
-                      <td className="px-4 py-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                            item.status === "PROCESSING"
-                              ? "bg-blue-100 text-blue-800"
-                              : item.status === "RECEIVED"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          <Clock className="mr-1 h-3 w-3" />
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2">
-                        {item.proofUrl ? (
-                          <a
-                            href={item.proofUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline text-sm"
-                          >
-                            Download
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2">
-                        <Button variant="outline" size="sm" onClick={() => openModal(item)}>
-                          Details
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                {helpList.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-4 py-2">{item.id}</td>
+                    <td className="px-4 py-2">{item.receivedFrom}</td>
+                    <td className="px-4 py-2">{item.receivedAmount}</td>
+                    <td className="px-4 py-2">{item.transactionId}</td>
+                    <td className="px-4 py-2">{item.requestReceivedAt}</td>
+                    <td className="px-4 py-2">{item.requestModifiedAt}</td>
+                    <td className="px-4 py-2">{item.verifiedBy}</td>
+                    <td className="px-4 py-2">
+                      {item.proofUrl ? (
+                        <a href={item.proofUrl} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">N/A</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        item.status === "PROCESSING"
+                          ? "bg-blue-100 text-blue-800"
+                          : item.status === "RECEIVED"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        <Clock className="mr-1 h-3 w-3" />
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2">
+                      
+                        
+                      <Button
+                      variant={(item.status as string) === "RECEIVED" ? "secondary" : "outline"}
+                      size="sm"
+                      className={(item.status as string) === "RECEIVED" ? "bg-green-100 text-green-800" : ""}
+                      onClick={() => openModal(item)}
+                      disabled={item.status !== "PROCESSING"}
+                    >
+                      {(item.status as string) === "RECEIVED" ? "Verified" : "Verify"}
+                    </Button>
+                    
+                      
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
                   </table>
                 </div>
               </div>
@@ -261,25 +353,22 @@ export default function ReceiveHelpPage() {
               </div>
               <div>
                 <Label>Sender</Label>
-                <Input disabled value={selected.name} />
+                <Input disabled value={selected.receivedFrom} />
               </div>
               <div>
                 <Label>Amount</Label>
-                <Input disabled value={selected.amount} />
+                <Input disabled value={selected.receivedAmount} />
               </div>
-              <div>
-                <Label>Proof</Label>
-                <Input disabled value={selected.proofUrl || "Not Provided"} />
-              </div>
+             
               <div>
                 <Label>Status</Label>
                 <select
                   className="border rounded-md px-3 py-2 w-full text-sm"
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as any)}
+                  onChange={(e) => setStatus(e.target.value as "RECEIVED" | "NOT RECEIVED")}
                 >
                   <option value="RECEIVED">RECEIVED</option>
-                  <option value="NOT RECEIVED">NOT RECEIVED</option>
+                  <option value="NOT_RECEIVED">NOT RECEIVED</option>
                 </select>
               </div>
               <div>
@@ -300,6 +389,32 @@ export default function ReceiveHelpPage() {
           )}
         </DialogContent>
       </Dialog>
+{/* ✅ Success Dialog */}
+<Dialog open={!!successPopup} onOpenChange={(open) => !open && setSuccessPopup(null)}>
+  <DialogContent className="max-w-md border-green-600 border-2">
+    <DialogHeader>
+      <DialogTitle className="text-green-600">✅ Help Verified</DialogTitle>
+    </DialogHeader>
+    <div className="text-sm text-green-700 whitespace-pre-wrap">{successPopup}</div>
+    <div className="flex justify-end pt-4">
+      <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={() => setSuccessPopup(null)}>OK</Button>
+    </div>
+  </DialogContent>
+</Dialog>
+
+
+{/* ❌ Error Dialog */}
+<Dialog open={!!errorPopup} onOpenChange={() => setErrorPopup(null)}>
+  <DialogContent className="max-w-md border-red-600 border-2">
+    <DialogHeader>
+      <DialogTitle className="text-red-600">❌ Error</DialogTitle>
+    </DialogHeader>
+    <div className="text-sm text-red-700">{errorPopup}</div>
+    <div className="flex justify-end pt-4">
+      <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={() => setErrorPopup(null)}>Close</Button>
+    </div>
+  </DialogContent>
+</Dialog>
 
     </div>
   );

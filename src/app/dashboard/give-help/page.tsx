@@ -29,11 +29,20 @@ type HelpRequest = {
   uplinerName: string;
   levelAmount: number;
   uplinerMobileNo: string;
-  status?: "NOT SENT" | "SUBMITTED" | "SENT";
+  status?: "UNPAID" | "SUBMITTED" | "SENT" | "RECEIVED";
   proofUrl?: string;
   transactionReferenceId?: string;
 };
-
+type HelpStats = {
+  memberId: string;
+  fullName: string;
+  availableBalance: number;
+  totalAmountGiven: number;
+  pendingHelpCount: number;
+  completedHelpCount: number;
+  totalAmountReceivedAck: number;
+  totalHelpGiven: number;
+};
 export default function GiveHelpPage() {
   const [helpRequests, setHelpRequests] = useState<HelpRequest[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -48,6 +57,24 @@ export default function GiveHelpPage() {
   const [errorPopup, setErrorPopup] = useState<string | null>(null);
   const authFetch = useAuthFetch();
   const { memberId } = useAuth();
+  const [stats, setStats] = useState<HelpStats | null>(null);
+  useEffect(() => {
+    if (!memberId) return;
+    const fetchStats = async () => {
+      try {
+        const res = await authFetch(
+          `http://localhost:9090/api/dashboard/summary/${memberId}`,
+          { method: "GET" },
+          true
+        );
+        const data = await res.json();
+        setStats(data.message[0].data); // assuming backend returns a single record
+      } catch (error) {
+        console.error("Failed to load stats:", error);
+      }
+    };
+    fetchStats();
+  }, [memberId]);
 
   useEffect(() => {
     if (!memberId) return;
@@ -59,10 +86,13 @@ export default function GiveHelpPage() {
           true
         );
         const data: HelpRequest[] = await response.json();
-        const initialized: HelpRequest[] = data.map((req: Omit<HelpRequest, "status">) => ({
+        const normalizeHelpRequest = (req: any): HelpRequest => ({
           ...req,
-          status: "NOT SENT"
-        }));
+          status: req.status || "UNPAID"
+        });
+        
+        const initialized = data.map(normalizeHelpRequest);
+        
         setHelpRequests(initialized);
       } catch (err) {
         console.error("Error fetching help requests:", err);
@@ -85,7 +115,7 @@ export default function GiveHelpPage() {
     formData.append("ofaMemberId", senderId);
     formData.append("receiverMemberId", selectedRequest.uplinerMemberId);
     formData.append("receiverMobile", selectedRequest.uplinerMobileNo);
-    formData.append("submittedAmount", String(selectedRequest.levelAmount)); // ✅ backend expects this
+    formData.append("amount", String(selectedRequest.levelAmount)); // ✅ backend expects this
     formData.append("uplinerLevel", String(selectedRequest.uplinerLevel));
     formData.append("proofUrl", file); // ✅ file field stays same
   
@@ -149,9 +179,10 @@ export default function GiveHelpPage() {
             <CardDescription>Your current balance available for giving help</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
-            <p className="text-4xl font-bold">₹2,500</p>
-            <p className="text-sm text-muted-foreground mt-1">Last updated: Today</p>
-          </CardContent>
+  <p className="text-4xl font-bold">₹{stats?.availableBalance?.toLocaleString() || "0"}</p>
+  <p className="text-sm text-muted-foreground mt-1">Last updated: Today</p>
+</CardContent>
+
         </Card>
 
         <Card>
@@ -160,25 +191,23 @@ export default function GiveHelpPage() {
             <CardDescription>Your help giving summary</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm">Total Help Given:</span>
-                <span className="font-medium">₹12,345</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">This Month:</span>
-                <span className="font-medium">₹1,500</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Pending Requests:</span>
-                <span className="font-medium">2</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Completed Helps:</span>
-                <span className="font-medium">15</span>
-              </div>
-            </div>
-          </CardContent>
+  <div className="space-y-3">
+    <div className="flex justify-between">
+      <span className="text-sm">Total Help Given:</span>
+      <span className="font-medium">₹{stats?.totalAmountGiven?.toLocaleString() || "0"}</span>
+    </div>
+    
+    <div className="flex justify-between">
+      <span className="text-sm">Pending Requests:</span>
+      <span className="font-medium">₹{stats?.pendingHelpCount?.toLocaleString() || "0"}</span>
+    </div>
+    <div className="flex justify-between">
+      <span className="text-sm">Completed Help requests:</span>
+      <span className="font-medium">₹{stats?.completedHelpCount?.toLocaleString() || "0"}</span>
+    </div>
+  </div>
+</CardContent>
+
           <CardFooter>
             <Link href="/dashboard/give-help-history" className="text-sm text-blue-600 hover:underline">
               View Detailed History
@@ -238,9 +267,17 @@ export default function GiveHelpPage() {
                         )}
                       </td>
                       <td className="px-4 py-2">
-                        <Button variant="outline" size="sm" onClick={() => openHelpModal(req)}>
-                          Help
-                        </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openHelpModal(req)}
+                        disabled={req.status !== "UNPAID"}
+                        title={req.status !== "UNPAID" ? "Already submitted" : "Click to help"}
+                      >
+                        {req.status === "SUBMITTED" ? "Waiting Approval" : 
+                        req.status === "RECEIVED" ? "Received" : 
+                        "Help"}
+                      </Button>
                       </td>
                     </tr>
                   ))}
