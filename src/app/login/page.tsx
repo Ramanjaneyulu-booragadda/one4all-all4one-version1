@@ -17,7 +17,9 @@ import { loginUrl } from "../../utils/constants";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
+import { useTheme } from "@/context/ThemeContext";
 export default function LoginPage() {
+  const { theme } = useTheme(); // To get the current theme
   const router = useRouter();
   const { login } = useAuth(); // To save user token     // ✅ Hook must be inside component
   const authFetch = useAuthFetch(); // Secure fetch wrapper using client token   // ✅ Hook must be inside component
@@ -90,15 +92,12 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 dark:bg-gray-700">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-8 md:mt-2 text-center text-xl md:text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-200">
-          Sign in to your account
-        </h2>
-      </div>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md"></div>
 
       <div className=" bg-white dark:bg-gray-200 mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
-        <div className="flex justify-center pt-5">
+        <div className="flex flex-col justify-center py-2 justify-center items-center mt-4 ">
           {/* 🔷 Brand Icon */}
+
           <svg
             className="h-10 w-10 text-indigo-600 dark:text-gray-500"
             viewBox="0 0 24 24"
@@ -106,6 +105,9 @@ export default function LoginPage() {
           >
             <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-5-7h10v-2H7v2zm0-4h10V7H7v2z" />
           </svg>
+          <h2 className="mt-8 md:mt-2 text-center text-xl md:text-2xl font-bold tracking-tight text-indigo-600 dark:text-gray-500">
+            Sign in to your account
+          </h2>
         </div>
         <div className=" pt-5 pb-16 px-8 text-xs ">
           {/* 🔐 Login Form */}
@@ -116,7 +118,6 @@ export default function LoginPage() {
                 variant="outlined"
                 fullWidth
                 size="small"
-                sx={{}}
                 onChange={(e) =>
                   setFormData({ ...formData, ofaMemberId: e.target.value })
                 }
@@ -174,8 +175,8 @@ export default function LoginPage() {
               <Button
                 fullWidth
                 variant="contained"
-                color="primary"
                 type="submit"
+                color={theme === "dark" ? "warning" : "primary"}
               >
                 Sign in
               </Button>
