@@ -60,7 +60,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-8 lg:px-8 bg-gray-100">
+    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-8 lg:px-8 bg-gray-100 dark:bg-gray-700">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           {/* 🔷 Brand Icon */}

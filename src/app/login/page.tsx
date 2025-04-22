@@ -16,6 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 import { loginUrl } from "../../utils/constants";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { toast } from "react-toastify";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth(); // To save user token     // ✅ Hook must be inside component
@@ -33,52 +34,70 @@ export default function LoginPage() {
   // 🔐 Handle login form submission
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError(null); // clear previous errors
+    if (formData.ofaMemberId !== "" || formData.password !== "") {
+      setError(null); // clear previous errors
 
-    try {
-      // 🔐 Use authFetch to include client token in headers
-      const response = await authFetch(
-        loginUrl,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
+      try {
+        // 🔐 Use authFetch to include client token in headers
+        const response = await authFetch(
+          loginUrl,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              ofaMemberId: formData.ofaMemberId, // ✅ direct mapping
+              ofaPassword: formData.password,
+            }),
           },
-          body: JSON.stringify({
-            ofaMemberId: formData.ofaMemberId, // ✅ direct mapping
-            ofaPassword: formData.password,
-          }),
-        },
-        false
-      );
+          false
+        );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        // console.log("✅ Login successful:", result);
+        toast.success("Login successful!", { theme: "colored" });
+
+        // (Optional) Save token if needed
+        // localStorage.setItem("token", result.token);
+        login(result.message[0].token, result.message[0].member[0].ofaMemberId); // ✅ Store user token globally
+        router.push("/dashboard");
+      } catch (error) {
+        console.error("❌ Login failed:", error);
+        setError("Please check your credentials and try again.");
+        toast.error(
+          "Login failed. Please check your credentials and try again.",
+          { theme: "colored" }
+        );
+        toast.success(
+          "Login failed. Please check your credentials and try again.",
+          { theme: "colored" }
+        );
       }
-
-      const result = await response.json();
-      console.log("✅ Login successful:", result);
-
-      // (Optional) Save token if needed
-      // localStorage.setItem("token", result.token);
-      login(result.message[0].token, result.message[0].member[0].ofaMemberId); // ✅ Store user token globally
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("❌ Login failed:", error);
-      setError("Login failed. Please check your credentials and try again.");
+    } else {
+      // toast.error("Please fill in all fields.", { theme: "colored" });
+      // console.log("❌ Please fill in all fields.");
+      toast.warning("Please enter MemberId and password.", {
+        theme: "colored",
+      });
+      setError("Please enter MemberId and password.");
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100">
+    <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 dark:bg-gray-700">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="mt-8 md:mt-2 text-center text-xl md:text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-200">
           Sign in to your account
         </h2>
       </div>
 
-      <div className=" bg-white mt-10 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
+      <div className=" bg-white dark:bg-gray-200 mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
         <div className="flex justify-center pt-5 pb-2">
           {/* 🔷 Brand Icon */}
           <svg
