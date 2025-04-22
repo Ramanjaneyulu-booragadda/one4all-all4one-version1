@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Include Roboto font weights */
+@font-face {
+  font-family: "Roboto";
+  font-weight: 300;
+  src: url("@fontsource/roboto/files/roboto-latin-300-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-weight: 400;
+  src: url("@fontsource/roboto/files/roboto-latin-400-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-weight: 500;
+  src: url("@fontsource/roboto/files/roboto-latin-500-normal.woff2")
+    format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-weight: 700;
+  src: url("@fontsource/roboto/files/roboto-latin-700-normal.woff2")
+    format("woff2");
+}
+/*
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+*/
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -10,7 +46,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 224 98% 27%;  /* #02158A - Deep Blue color from original site */
+    --primary: 224 98% 27%; /* #02158A - Deep Blue color from original site */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -60,7 +96,7 @@
 }
 
 .sidebar {
-  background-color: #00117A;
+  background-color: #00117a;
 }
 
 .content-bg {

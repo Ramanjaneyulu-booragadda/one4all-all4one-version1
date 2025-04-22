@@ -471,8 +471,9 @@ export const viewOrgchart_dummyData = [
     referralAmount: "NA",
   },
 ];
-
-export const loginUrl = "http://localhost:9090/api/login";
-export const registrationUrl = "http://localhost:9090/api/register";
-export const ONE4ALL_USER_RO ="ONE4ALL_USER_RO";
-export const ONE4ALL_ADMIN_RW ="ONE4ALL_ADMIN_RW";
+export const baseURL = "http://localhost:9090";
+export const baseApiURL = `${baseURL}/api`;
+export const loginUrl = `${baseApiURL}/login`;
+export const registrationUrl = `${baseApiURL}/register`;
+export const ONE4ALL_USER_RO = "ONE4ALL_USER_RO";
+export const ONE4ALL_ADMIN_RW = "ONE4ALL_ADMIN_RW";
