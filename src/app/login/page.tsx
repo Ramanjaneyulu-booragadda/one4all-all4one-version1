@@ -97,24 +97,25 @@ export default function LoginPage() {
       </div>
 
       <div className=" bg-white dark:bg-gray-200 mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
-        <div className="flex justify-center pt-5 pb-2">
+        <div className="flex justify-center pt-5">
           {/* 🔷 Brand Icon */}
           <svg
-            className="h-10 w-10 text-indigo-600"
+            className="h-10 w-10 text-indigo-600 dark:text-gray-500"
             viewBox="0 0 24 24"
             fill="currentColor"
           >
             <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-5-7h10v-2H7v2zm0-4h10V7H7v2z" />
           </svg>
         </div>
-        <div className=" pt-5 pb-16 px-8 ">
+        <div className=" pt-5 pb-16 px-8 text-xs ">
           {/* 🔐 Login Form */}
-          <form className="space-y-8" onSubmit={handleSubmit}>
+          <form className="space-y-7" onSubmit={handleSubmit}>
             <div>
               <TextField
                 label="Member ID"
                 variant="outlined"
                 fullWidth
+                size="small"
                 sx={{}}
                 onChange={(e) =>
                   setFormData({ ...formData, ofaMemberId: e.target.value })
@@ -129,6 +130,7 @@ export default function LoginPage() {
                 type="password"
                 variant="outlined"
                 fullWidth
+                size="small"
                 sx={{}}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
@@ -137,7 +139,7 @@ export default function LoginPage() {
             </div>
 
             {/* 🔁 Options & Links */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between px-1">
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -147,12 +149,12 @@ export default function LoginPage() {
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
+                  className="ml-2 block text-xs text-gray-900"
                 >
                   Remember me
                 </label>
               </div>
-              <div className="text-sm">
+              <div className="text-xs">
                 <Link
                   href="/reset-password"
                   className="font-semibold text-indigo-600 hover:text-indigo-500"
@@ -164,11 +166,11 @@ export default function LoginPage() {
 
             {/* ⚠️ Error Message */}
             {error && (
-              <div className="text-red-600 text-sm font-semibold">{error}</div>
+              <div className="text-red-600 text-xs font-semibold">{error}</div>
             )}
 
             {/* 🚪 Submit Button */}
-            <div>
+            <div className="pt-1">
               <Button
                 fullWidth
                 variant="contained"
@@ -180,7 +182,7 @@ export default function LoginPage() {
             </div>
 
             {/* ✍️ Registration Link */}
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-xs">
               <Link
                 href="/register"
                 className="font-semibold text-indigo-600 hover:text-indigo-500"
