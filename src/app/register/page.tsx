@@ -11,8 +11,26 @@ import { useState } from "react";
 import { useParams, usePathname } from "next/navigation";
 import Link from "next/link";
 
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import { toast } from "react-toastify";
+import { useTheme } from "@/context/ThemeContext";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import TextareaAutosize from "@mui/material/TextareaAutosize";
+
 // Constants/utilities (make sure these exist or replace with mock data)
-import { GENDER_OPTIONS, NATIONALITY_OPTIONS, INITIAL_VALUES ,registrationUrl,ONE4ALL_USER_RO,ONE4ALL_ADMIN_RW} from "../../utils/constants";
+import {
+  GENDER_OPTIONS,
+  NATIONALITY_OPTIONS,
+  INITIAL_VALUES,
+  registrationUrl,
+  ONE4ALL_USER_RO,
+  ONE4ALL_ADMIN_RW,
+} from "../../utils/constants";
 import { validationUtils } from "../../utils/validationUtils";
 import { useAuthFetch } from "../../hooks/useAuthFetch";
 import { Toast } from "../../components/ui/Toast";
@@ -32,8 +50,11 @@ interface FormData {
 }
 
 export default function RegisterPage() {
+  const { theme } = useTheme(); // To get the current theme
   const pathname = usePathname(); // 👈 Used to infer "user" vs "admin"
-  const role = pathname.startsWith("/admin") ? ONE4ALL_ADMIN_RW : ONE4ALL_USER_RO; // 🔄 Dynamic role
+  const role = pathname.startsWith("/admin")
+    ? ONE4ALL_ADMIN_RW
+    : ONE4ALL_USER_RO; // 🔄 Dynamic role
   const authFetch = useAuthFetch();
   const params = useParams();
   const ref = (params as any)?.ref || "";
@@ -50,7 +71,7 @@ export default function RegisterPage() {
     emailid: string;
     MemberID: string;
     Mobile: string;
-} | null>(null);
+  } | null>(null);
 
   const validateForm = (data: FormData): string[] => {
     const errors = [
@@ -58,7 +79,10 @@ export default function RegisterPage() {
       ...validationUtils.validateAge(data.dob),
       ...validationUtils.validateNumber(data.pincode, "Pincode"),
       ...validationUtils.validateNumber(data.mobileNo, "Mobile Number"),
-      ...validationUtils.validatePasswordMatch(data.password, data.confirmPassword),
+      ...validationUtils.validatePasswordMatch(
+        data.password,
+        data.confirmPassword
+      ),
     ];
     setValidationErrors(errors);
     return errors;
@@ -76,103 +100,229 @@ export default function RegisterPage() {
 
   const submitRegistration = async (data: FormData) => {
     try {
-      const response = await authFetch(registrationUrl, {
-        method: "POST",
-        headers: {
-          roles: role // 👈 This is your custom header
+      const response = await authFetch(
+        registrationUrl,
+        {
+          method: "POST",
+          headers: {
+            roles: role, // 👈 This is your custom header
+          },
+          body: JSON.stringify({
+            ofaFullName: data.fullName,
+            ofaGender: data.gender,
+            ofaDob: data.dob,
+            ofaAddress: data.address,
+            ofaPincode: data.pincode,
+            ofaMobileNo: data.mobileNo,
+            ofaEmail: data.email,
+            ofaNationality: data.nationality,
+            ofaPassword: data.password,
+            ofaCreatedBy: role,
+            ofaCreatedDt: new Date().toISOString().split("T")[0],
+            ofaUpdatedBy: role,
+            ofaUpdatedDt: new Date().toISOString().split("T")[0],
+            ofaIsDeleted: 0,
+          }),
         },
-        body: JSON.stringify({
-          ofaFullName: data.fullName,
-          ofaGender: data.gender,
-          ofaDob: data.dob,
-          ofaAddress: data.address,
-          ofaPincode: data.pincode,
-          ofaMobileNo: data.mobileNo,
-          ofaEmail: data.email,
-          ofaNationality: data.nationality,
-          ofaPassword: data.password,
-          ofaCreatedBy: role,
-          ofaCreatedDt: new Date().toISOString().split("T")[0],
-          ofaUpdatedBy: role,
-          ofaUpdatedDt: new Date().toISOString().split("T")[0],
-          ofaIsDeleted: 0,
-        }),
-      },false);
-    
+        false
+      );
+
       const result = await response.json();
-    
+
       if (!response.ok) {
-        const validationErrors = result.message[0].validationmMessage as string[];
+        const validationErrors = result.message[0]
+          .validationmMessage as string[];
         setValidationErrors(validationErrors);
         setToastType("error");
         setToastMessage("Registration failed. Please fix validation errors.");
         setShowError(true);
         return;
       }
-    
+
       const registrationDetails = result.message[0].RegistrationDetails;
       setSuccessData({
         emailid: registrationDetails.emailid,
         MemberID: registrationDetails.MemberID,
-        Mobile: registrationDetails.Mobile
-      });// ✅ Save data
-setToastType("success");
-setToastMessage("🎉 User Registration successful!");
-setShowSuccess(true);
-
-
-
+        Mobile: registrationDetails.Mobile,
+      }); // ✅ Save data
+      setToastType("success");
+      setToastMessage("🎉 User Registration successful!");
+      setShowSuccess(true);
     } catch (error) {
       console.error("Registration failed:", error);
       setToastType("error");
-setToastMessage("⚠️ Registration failed. Please check the form and try again.");
-setShowError(true);
-
+      setToastMessage(
+        "⚠️ Registration failed. Please check the form and try again."
+      );
+      setShowError(true);
     }
-  }  
+  };
 
   return (
-    
-    <div className="flex flex-col min-h-screen justify-center items-center bg-gray-100 px-4 py-10">
-      
-      <div className="bg-white w-full max-w-2xl rounded-lg shadow-md p-10">
-        <h2 className="text-3xl font-bold mb-6 text-center text-indigo-600">
+    <div className="flex flex-col min-h-screen justify-center items-center bg-gray-100 dark:bg-gray-700 px-4 py-10">
+      <div className="bg-white  dark:bg-gray-200 w-full max-w-2xl rounded-lg shadow-md p-10">
+        <h2 className="text-2xl font-bold mb-6 text-center text-indigo-600  dark:text-gray-500">
           Register
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <FormField label="Full Name" value={formData.fullName} onChange={(val) => setFormData({ ...formData, fullName: val })} />
-          <FormSelect label="Gender" value={formData.gender} onChange={(val) => setFormData({ ...formData, gender: val })} options={GENDER_OPTIONS} />
-          <FormField label="Date of Birth" type="date" value={formData.dob} onChange={(val) => setFormData({ ...formData, dob: val })} />
-          <FormTextArea label="Address" value={formData.address} onChange={(val) => setFormData({ ...formData, address: val })} />
-          <FormField label="Pincode" value={formData.pincode} onChange={(val) => setFormData({ ...formData, pincode: val })} />
-          <FormField label="Mobile Number" type="tel" pattern="[0-9]{10}" value={formData.mobileNo} onChange={(val) => setFormData({ ...formData, mobileNo: val })} />
-          <FormField label="Email" type="email" value={formData.email} onChange={(val) => setFormData({ ...formData, email: val })} />
-          <FormSelect label="Nationality" value={formData.nationality} onChange={(val) => setFormData({ ...formData, nationality: val })} options={NATIONALITY_OPTIONS} />
-          <FormField label="Password" type="password" value={formData.password} onChange={(val) => setFormData({ ...formData, password: val })} />
-          <FormField label="Confirm Password" type="password" value={formData.confirmPassword} onChange={(val) => setFormData({ ...formData, confirmPassword: val })} />
+          <TextField
+            label="Member ID"
+            variant="outlined"
+            fullWidth
+            size="small"
+            onChange={(e) =>
+              setFormData({ ...formData, fullName: e.target.value })
+            }
+          />
+
+          <TextField
+            label="Mobile Number"
+            variant="outlined"
+            fullWidth
+            size="small"
+            type="tel"
+            onChange={(e) =>
+              setFormData({ ...formData, mobileNo: e.target.value })
+            }
+          />
+          <TextField
+            label="Email"
+            type="email"
+            variant="outlined"
+            fullWidth
+            size="small"
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
+          <TextField
+            label="Password"
+            type="password"
+            variant="outlined"
+            fullWidth
+            size="small"
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+          />
+          <TextField
+            label="Confirm Password"
+            type="password"
+            variant="outlined"
+            fullWidth
+            size="small"
+            onChange={(e) =>
+              setFormData({ ...formData, confirmPassword: e.target.value })
+            }
+          />
+          <TextField
+            label=""
+            variant="outlined"
+            fullWidth
+            size="small"
+            type="date"
+            onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+          />
+          {/* <TextareaAutosize
+            aria-label="empty textarea"
+            placeholder="Address"
+            minRows={3}
+            maxRows={4}
+            onChange={(e) =>
+              setFormData({ ...formData, address: e.target.value })
+            }
+          /> */}
+          <FormControl>
+            <FormLabel id="demo-row-radio-buttons-group-label">
+              Gender
+            </FormLabel>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+              onChange={(event) => {
+                setFormData({ ...formData, gender: event.target.value });
+              }}
+            >
+              <FormControlLabel
+                value="male"
+                control={<Radio />}
+                label="Male"
+                sx={{ color: "#000" }}
+              />
+              <FormControlLabel
+                value="female"
+                control={<Radio />}
+                label="Female"
+                sx={{ color: "#000" }}
+              />
+            </RadioGroup>
+          </FormControl>
+          <FormTextArea
+            label="Address"
+            value={formData.address}
+            onChange={(val) => setFormData({ ...formData, address: val })}
+          />
+
+          <TextField
+            label="Pincode"
+            variant="outlined"
+            fullWidth
+            size="small"
+            onChange={(e) =>
+              setFormData({ ...formData, pincode: e.target.value })
+            }
+          />
+
+          <TextField
+            label="Nationality"
+            variant="outlined"
+            fullWidth
+            size="small"
+            onChange={(e) =>
+              setFormData({ ...formData, nationality: e.target.value })
+            }
+          />
+
+          {/* <FormSelect
+            label="Nationality"
+            value={formData.nationality}
+            onChange={(val) => setFormData({ ...formData, nationality: val })}
+            options={NATIONALITY_OPTIONS}
+          /> */}
+
           {/* <FormField label="Ref Number" value={ref} readOnly />
           <FormField label="Name" value={name} readOnly /> */}
-{/* 🔥 Errors */}
+          {/* 🔥 Errors */}
           {showError && validationErrors.length > 0 && (
             <div className="text-red-500 text-sm space-y-1">
-              {validationErrors.map((err, idx) => <p key={idx}>⚠️ {err}</p>)}
+              {validationErrors.map((err, idx) => (
+                <p key={idx}>⚠️ {err}</p>
+              ))}
             </div>
           )}
-{/* ✅ Success */}
+          {/* ✅ Success */}
           {showSuccess && (
             <div className="text-green-600 text-sm border p-3 rounded bg-green-50 shadow-sm">
               {successMessage}
             </div>
           )}
-{/* Submit */}
-          <button type="submit" className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-500 transition">
+          {/* Submit */}
+          <Button
+            fullWidth
+            variant="contained"
+            type="submit"
+            color={theme === "dark" ? "warning" : "primary"}
+          >
             Register
-          </button>
-{/* Redirect Link */}
-          <p className="text-sm text-center mt-4">
+          </Button>
+          {/* Redirect Link */}
+          <p className="text-sm text-center mt-4 text-gray-500 dark:text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-600 hover:underline">Login here</Link>
+            <Link href="/login" className="text-indigo-600 hover:underline">
+              Login here
+            </Link>
           </p>
         </form>
       </div>
@@ -189,10 +339,8 @@ setShowError(true);
               window.location.href = "/login";
             }
           }}
-          
         />
       )}
-
     </div>
   );
 }
@@ -210,9 +358,18 @@ interface FormFieldProps {
   pattern?: string;
 }
 
-const FormField = ({ label, value, onChange, type = "text", readOnly = false, pattern }: FormFieldProps) => (
+const FormField = ({
+  label,
+  value,
+  onChange,
+  type = "text",
+  readOnly = false,
+  pattern,
+}: FormFieldProps) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
     <input
       type={type}
       value={value}
@@ -234,7 +391,9 @@ interface FormSelectProps {
 
 const FormSelect = ({ label, value, onChange, options }: FormSelectProps) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -242,7 +401,9 @@ const FormSelect = ({ label, value, onChange, options }: FormSelectProps) => (
       required
     >
       {options.map((option) => (
-        <option key={option} value={option}>{option}</option>
+        <option key={option} value={option}>
+          {option}
+        </option>
       ))}
     </select>
   </div>
@@ -256,12 +417,14 @@ interface FormTextAreaProps {
 
 const FormTextArea = ({ label, value, onChange }: FormTextAreaProps) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
     <textarea
       value={value}
       onChange={(e) => onChange(e.target.value)}
       required
-      className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent text-black"
     />
   </div>
 );

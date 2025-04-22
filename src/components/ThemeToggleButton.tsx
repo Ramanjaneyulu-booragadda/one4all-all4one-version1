@@ -1,16 +1,14 @@
 "use client";
 
 import { useTheme } from "@/context/ThemeContext";
-
+import Switch from "@mui/material/Switch";
 export default function ThemeToggleButton() {
   const { theme, toggleTheme } = useTheme();
-
+  const label = { inputProps: { "aria-label": "Switch demo" } };
   return (
-    <button
-      onClick={toggleTheme}
-      className="fixed top-4 right-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-black dark:text-white rounded"
-    >
-      {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
-    </button>
+    <span className="fixed top-2 right-4" title="Toggle Theme">
+      <Switch {...label} onChange={toggleTheme} /> {}
+      {/* {theme === "dark" ? "☀️" : "🌙"} */}
+    </span>
   );
 }

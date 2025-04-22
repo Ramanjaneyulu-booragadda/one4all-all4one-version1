@@ -26,6 +26,7 @@ import "reactflow/dist/style.css";
 import { CardContent } from "@/components/ui/card";
 import { getClientToken, getUserToken } from "../utils/tokenService";
 import { useAuth } from "@/context/AuthContext";
+import { baseApiURL } from "@/utils/constants";
 
 type Orientation = "vertical" | "horizontal";
 
@@ -55,9 +56,7 @@ const buildTreeLayout = (
   const id = node.memberId;
   const color = getNodeColor(node.leftOverChildrenPosition);
 
-  const position = orientation === "vertical"
-    ? { x, y }
-    : { x: y, y: x };
+  const position = orientation === "vertical" ? { x, y } : { x: y, y: x };
 
   const currentNode: Node = {
     id,
@@ -81,7 +80,8 @@ const buildTreeLayout = (
       fontSize: "0.75rem",
       minWidth: 150,
     },
-    sourcePosition: orientation === "vertical" ? Position.Bottom : Position.Right,
+    sourcePosition:
+      orientation === "vertical" ? Position.Bottom : Position.Right,
     targetPosition: orientation === "vertical" ? Position.Top : Position.Left,
   };
 
@@ -120,7 +120,10 @@ const buildTreeLayout = (
   return [allNodes, allEdges];
 };
 
-const TreeGraph: React.FC<TreeGraphProps> = ({ data, orientation = "vertical" }) => {
+const TreeGraph: React.FC<TreeGraphProps> = ({
+  data,
+  orientation = "vertical",
+}) => {
   const { memberId } = useAuth();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -154,7 +157,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ data, orientation = "vertical" })
       const clientToken = await getClientToken();
       const userToken = getUserToken();
 
-      const res = await fetch("http://localhost:9090/api/addreferer", {
+      const res = await fetch(`${baseApiURL}/addreferer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -202,16 +205,27 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ data, orientation = "vertical" })
 
       {/* 🟢 Legend */}
       <div className="absolute top-2 right-2 bg-white p-2 rounded shadow text-xs z-50">
-        <p><span className="inline-block w-3 h-3 bg-red-400 mr-2 rounded-full"></span>2 slots open</p>
-        <p><span className="inline-block w-3 h-3 bg-yellow-300 mr-2 rounded-full"></span>1 slot open</p>
-        <p><span className="inline-block w-3 h-3 bg-green-500 mr-2 rounded-full"></span>Fully occupied</p>
+        <p>
+          <span className="inline-block w-3 h-3 bg-red-400 mr-2 rounded-full"></span>
+          2 slots open
+        </p>
+        <p>
+          <span className="inline-block w-3 h-3 bg-yellow-300 mr-2 rounded-full"></span>
+          1 slot open
+        </p>
+        <p>
+          <span className="inline-block w-3 h-3 bg-green-500 mr-2 rounded-full"></span>
+          Fully occupied
+        </p>
       </div>
 
       {/* 🟠 Modal for Add Referral */}
       {selectedNode && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">Add Referral for {selectedNode.id}</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              Add Referral for {selectedNode.id}
+            </h2>
             <div className="space-y-4">
               <input
                 type="text"

@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
+import { ToastContainer } from "react-toastify";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,6 +27,7 @@ export default function RootLayout({
           <AuthProvider>
             <ThemeToggleButton />
             {children}
+            <ToastContainer />
           </AuthProvider>
         </ThemeProvider>
       </body>

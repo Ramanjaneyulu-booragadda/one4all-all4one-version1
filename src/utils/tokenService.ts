@@ -12,7 +12,7 @@
  *
  * ❗ Tokens are stored in memory only — safer than localStorage/sessionStorage
  */
-
+import { baseURL } from "./constants"; // Adjust the import path as necessary
 // Store tokens in memory (module-level variables)
 let clientToken: string | null = null;
 let userToken: string | null = null;
@@ -33,18 +33,18 @@ export const getClientToken = async (): Promise<string> => {
     return clientToken!;
   }
   console.log("🚀 Fetching new client token from /oauth2/token");
-// 🔐 Request token from Spring Boot Authorization Server
-const res = await fetch("http://localhost:9090/oauth2/token", {
+  // 🔐 Request token from Spring Boot Authorization Server
+  const res = await fetch(`${baseURL}/oauth2/token`, {
     method: "POST",
     headers: {
       // Client credentials (base64 encoded)
       Authorization: `Basic ${btoa("one4all:Oldisgold@2025")}`,
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams({
       grant_type: "client_credentials",
-      scope: "read"
-    })
+      scope: "read",
+    }),
   });
 
   if (!res.ok) {

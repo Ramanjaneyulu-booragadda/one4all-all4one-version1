@@ -11,14 +11,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
+import { baseApiURL } from "@/utils/constants";
 export default function LoginPage() {
   const router = useRouter();
 
   // 🧾 State for form inputs
   const [formData, setFormData] = useState({
     ofaMemberId: "",
-    password: ""
+    password: "",
   });
 
   // ❗ Error state for showing login issues
@@ -30,16 +30,16 @@ export default function LoginPage() {
     setError(null); // clear previous errors
 
     try {
-      const response = await fetch("http://localhost:9090/api/login", {
+      const response = await fetch(`${baseApiURL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({
           ofaMemberId: formData.ofaMemberId, // ✅ direct mapping
-          ofaPassword: formData.password
-        })
+          ofaPassword: formData.password,
+        }),
       });
 
       if (!response.ok) {
@@ -60,11 +60,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-8 lg:px-8 bg-gray-100">
+    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-8 lg:px-8 bg-gray-100 dark:bg-gray-700">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           {/* 🔷 Brand Icon */}
-          <svg className="h-10 w-10 text-indigo-600" viewBox="0 0 24 24" fill="currentColor">
+          <svg
+            className="h-10 w-10 text-indigo-600"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
             <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-5-7h10v-2H7v2zm0-4h10V7H7v2z" />
           </svg>
         </div>
@@ -79,8 +83,11 @@ export default function LoginPage() {
           <form className="space-y-8" onSubmit={handleSubmit}>
             {/* 🆔 ofaMemberId Field */}
             <div>
-              <label htmlFor="ofaMemberId" className="block text-sm font-medium leading-6 text-gray-900">
-               Admin Member ID
+              <label
+                htmlFor="ofaMemberId"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Admin Member ID
               </label>
               <div className="mt-2">
                 <input
@@ -90,7 +97,9 @@ export default function LoginPage() {
                   autoComplete="username"
                   required
                   value={formData.ofaMemberId}
-                  onChange={(e) => setFormData({ ...formData, ofaMemberId: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, ofaMemberId: e.target.value })
+                  }
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
                              ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
                              focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -100,7 +109,10 @@ export default function LoginPage() {
 
             {/* 🔑 Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
                 Password
               </label>
               <div className="mt-2">
@@ -111,7 +123,9 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm 
                              ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 
                              focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -128,12 +142,18 @@ export default function LoginPage() {
                   type="checkbox"
                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
                   Remember me
                 </label>
               </div>
               <div className="text-sm">
-                <Link href="/reset-password" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                <Link
+                  href="/reset-password"
+                  className="font-semibold text-indigo-600 hover:text-indigo-500"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -159,7 +179,10 @@ export default function LoginPage() {
 
             {/* ✍️ Registration Link */}
             <div className="flex items-center justify-between text-sm">
-              <Link href="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">
+              <Link
+                href="/register"
+                className="font-semibold text-indigo-600 hover:text-indigo-500"
+              >
                 If you don't have account? register here
               </Link>
             </div>
