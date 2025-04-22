@@ -34,9 +34,8 @@ export default function LoginPage() {
   // 🔐 Handle login form submission
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null); // clear previous errors
     if (formData.ofaMemberId !== "" || formData.password !== "") {
-      setError(null); // clear previous errors
-
       try {
         // 🔐 Use authFetch to include client token in headers
         const response = await authFetch(
@@ -85,7 +84,7 @@ export default function LoginPage() {
       toast.warning("Please enter MemberId and password.", {
         theme: "colored",
       });
-      setError("Please enter MemberId and password.");
+      // setError("Please enter MemberId and password.");
     }
   };
 
