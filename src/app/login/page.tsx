@@ -61,12 +61,18 @@ export default function LoginPage() {
         }
 
         const result = await response.json();
-        // console.log("✅ Login successful:", result);
-        toast.success("Login successful!", { theme: "colored" });
-
+        
+        const memberData = result.message[0].member[0];
+        const extractedRoles = (memberData.roles || []).map((roleObj: any) => roleObj.roleName);
         // (Optional) Save token if needed
         // localStorage.setItem("token", result.token);
-        login(result.message[0].token, result.message[0].member[0].ofaMemberId); // ✅ Store user token globally
+        login(
+          result.message[0].token,
+          memberData.ofaMemberId,
+          extractedRoles // ✅ Array of role names like ["ONE4ALL_USER_RO", "ONE4ALL_ADMIN_RW"]
+        );
+        // console.log("✅ Login successful:", result);
+        toast.success("Login successful!", { theme: "colored" });
         router.push("/dashboard");
       } catch (error) {
         console.error("❌ Login failed:", error);

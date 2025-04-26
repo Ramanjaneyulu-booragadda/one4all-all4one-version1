@@ -43,9 +43,10 @@ import {
 interface AuthContextType {
   userToken: string | null;
   memberId: string | null;
+  roles: string[]; // ✅ NEW: roles array
   isLoggedIn: boolean;
   isAuthReady: boolean; // 👈 NEW!
-  login: (token: string, memberId: string) => void;
+  login: (token: string, memberId: string, roles: string[]) => void;
   logout: () => void;
 }
 
@@ -60,6 +61,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userToken, setUserToken] = useState<string | null>(null);
   const [memberId, setMemberId] = useState<string | null>(null);
+  const [roles, setRoles] = useState<string[]>([]); // ✅ NEW: roles state
   const [isAuthReady, setIsAuthReady] = useState(false); // 👈 NEW
   /**
    * Effect: On mount, preload the client token and restore user state from memory.
@@ -70,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const token = await getClientToken();
         console.log("🚀 Client token preloaded on app start:", token);
+        setIsAuthReady(true);
       } catch (err) {
         console.error("❌ Failed to preload client token:", err);
       }
@@ -90,12 +93,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * Called after a successful login API call.
    * Stores userToken and memberId in both tokenService memory and context state.
    */
-  const login = (token: string, memberId: string) => {
+  const login = (token: string, memberId: string,  rolesFromBackend: string[]) => {
     setUserTokenInMemory(token);
     setMemberIdInMemory(memberId);
 
     setUserToken(token);
     setMemberId(memberId);
+    setRoles(rolesFromBackend); // ✅ Use roles passed from backend
   };
 
   /**
@@ -107,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearTokens(); // Removes all tokens from tokenService
     setUserToken(null);
     setMemberId(null);
+    setRoles([]); // ✅ Clear roles
   };
 
   /**
@@ -121,6 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthReady,
         login,
         logout,
+        roles
       }}
     >
       {children}

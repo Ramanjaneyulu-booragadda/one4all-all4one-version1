@@ -3,75 +3,91 @@
 /**
  * TotalMembersPage.tsx
  * ----------------------
- * This component fetches the full downliner hierarchy for the logged-in user
- * using the memberId from AuthContext and displays it via a binary tree
- * using the TreeGraph component.
+ * Displays the total downliner hierarchy for a logged-in user
+ * with search, filter, and role-based access control.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import TreeGraph from "@/components/TreeGraph";
 import { useAuth } from "@/context/AuthContext";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { hasAnyRole } from "@/utils/roleUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Calendar, Download, Filter, Search } from "lucide-react";
+import { Download, Search } from "lucide-react";
 import { baseApiURL } from "@/utils/constants";
+import { ROLES } from "@/utils/roles";
+
 export default function TotalMembersPage() {
-  const { memberId, isAuthReady } = useAuth();
+  const { memberId, isAuthReady, roles, logout } = useAuth();
+  const router = useRouter();
   const authFetch = useAuthFetch();
+
   const [hierarchyData, setHierarchyData] = useState<any | null>(null);
-  const [orientation, setOrientation] = useState<"vertical" | "horizontal">(
-    "vertical"
-  );
+  const [orientation, setOrientation] = useState<"vertical" | "horizontal">("vertical");
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "complete" | "partial" | "not-filled"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "complete" | "partial" | "not-filled">("all");
+  const [showUnauthorizedModal, setShowUnauthorizedModal] = useState(false);
 
   /**
-   * Fetch the downliner hierarchy when memberId becomes available
+   * Fetch hierarchy data from backend.
+   */
+  const fetchHierarchy = useCallback(async () => {
+    if (!memberId) return;
+    try {
+      const res = await authFetch(`${baseApiURL}/${memberId}/downlinerHierarchy`, {}, true);
+      const data = await res.json();
+      setHierarchyData(data);
+    } catch (err) {
+      console.error("❌ Failed to fetch hierarchy:", err);
+    }
+  }, [authFetch, memberId]);
+
+  /**
+   * Check user authorization.
    */
   useEffect(() => {
-    if (!isAuthReady || !memberId) return;
-    console.log("member id:", memberId);
-    const fetchHierarchy = async () => {
-      try {
-        const res = await authFetch(
-          `${baseApiURL}/${memberId}/downlinerHierarchy`,
-          {},
-          true
-        );
-        const data = await res.json();
-        setHierarchyData(data);
-      } catch (err) {
-        console.error("❌ Failed to fetch hierarchy:", err);
-      }
-    };
+    if (isAuthReady && (!hasAnyRole(roles, [ROLES.ADMIN_RW, ROLES.USER_RO]))) {
+      setShowUnauthorizedModal(true);
+    }
+  }, [isAuthReady, roles]);
 
-    fetchHierarchy();
-  }, [isAuthReady, memberId]);
-  // 🔍 Recursive filter logic for search & status
+  /**
+   * Fetch hierarchy after authentication is ready.
+   */
+  useEffect(() => {
+    if (isAuthReady && memberId) {
+      fetchHierarchy();
+    }
+  }, [isAuthReady, memberId, fetchHierarchy]);
+
+  /**
+   * Handle user logout.
+   */
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  /**
+   * Apply search and status filters recursively.
+   */
   const filterHierarchy = (node: any): any | null => {
     const matchesSearch =
       node.memberId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       node.fullName.toLowerCase().includes(searchTerm.toLowerCase());
 
     const status =
-      node.leftOverChildrenPosition === 0
-        ? "complete"
-        : node.leftOverChildrenPosition === 2
-        ? "not-filled"
-        : "partial";
+      node.leftOverChildrenPosition === 0 ? "complete" :
+      node.leftOverChildrenPosition === 2 ? "not-filled" :
+      "partial";
 
     const matchesStatus = statusFilter === "all" || statusFilter === status;
 
-    const filteredChildren = node.children
-      ?.map(filterHierarchy)
-      .filter((child: any) => child !== null);
+    const filteredChildren = node.children?.map(filterHierarchy).filter((child: any) => child !== null);
 
-    const shouldInclude = matchesSearch && matchesStatus;
-
-    if (shouldInclude || (filteredChildren && filteredChildren.length > 0)) {
+    if (matchesSearch && matchesStatus || (filteredChildren && filteredChildren.length > 0)) {
       return { ...node, children: filteredChildren || [] };
     }
 
@@ -85,17 +101,32 @@ export default function TotalMembersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Unauthorized Modal */}
+      {showUnauthorizedModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Unauthorized Access</h2>
+            <p className="mb-4">You are not authorized to view this page.</p>
+            <div className="flex justify-center space-x-4">
+              <Button variant="destructive" onClick={handleLogout}>Yes, Logout</Button>
+              <Button variant="outline" onClick={() => setShowUnauthorizedModal(false)}>No, Stay</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Total Members Hierarchy</h1>
         <Button variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />
-          Export
+          <Download className="mr-2 h-4 w-4" /> Export
         </Button>
       </div>
 
+      {/* Tree Graph */}
       <Card>
         <CardHeader>
-          {/* Optional filters or search */}
+          {/* Search and Filters */}
           <div className="flex flex-wrap gap-2 mt-2">
             <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -107,7 +138,7 @@ export default function TotalMembersPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            {/* 🎨 Status Filter */}
+
             <select
               className="border h-9 rounded px-3 text-sm"
               value={statusFilter}
@@ -119,26 +150,28 @@ export default function TotalMembersPage() {
               <option value="not-filled">Not Filled</option>
             </select>
 
-            {/* ↕️ Orientation */}
             <Button
               variant="outline"
               size="sm"
               onClick={() =>
-                setOrientation((prev) =>
-                  prev === "vertical" ? "horizontal" : "vertical"
-                )
+                setOrientation(prev => prev === "vertical" ? "horizontal" : "vertical")
               }
             >
               {orientation === "vertical" ? "🔁 Horizontal" : "↕️ Vertical"}
             </Button>
           </div>
         </CardHeader>
+
         <CardContent>
           {hierarchyData ? (
-            <TreeGraph data={filteredTree} orientation={orientation} />
+            <TreeGraph
+              data={filteredTree}
+              orientation={orientation}
+              onHierarchyRefresh={fetchHierarchy}
+            />
           ) : (
             <p className="text-gray-500 text-sm">
-              Loading hierarchy or no matching results......
+              Loading hierarchy or no matching results...
             </p>
           )}
         </CardContent>
