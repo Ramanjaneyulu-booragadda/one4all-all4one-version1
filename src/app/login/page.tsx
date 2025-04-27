@@ -94,25 +94,28 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 dark:bg-gray-700">
       <div className="sm:mx-auto sm:w-full sm:max-w-md"></div>
 
-      <div className=" bg-white dark:bg-gray-200 mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
-        <div className="flex flex-col justify-center py-2 justify-center items-center mt-4 ">
+      <div className=" bg-white dark:bg-transparent dark:border-4 dark:border-[#cdc9e4] mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
+        <div
+          className="flex flex-col justify-center py-2 justify-center items-center mt-4 "
+          style={{ color: "#cdc9e4" }}
+        >
           {/* 🔷 Brand Icon */}
 
           <svg
-            className="h-10 w-10 text-indigo-600 dark:text-gray-500"
+            className="h-10 w-10 text-indigo-600 dark:text-[#cdc9e4]"
             viewBox="0 0 24 24"
             fill="currentColor"
           >
             <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-5-7h10v-2H7v2zm0-4h10V7H7v2z" />
           </svg>
-          <h2 className="mt-8 md:mt-2 text-center text-xl md:text-2xl font-bold tracking-tight text-indigo-600 dark:text-gray-500">
+          <h2 className="mt-8 md:mt-2 text-center text-xl md:text-2xl font-bold tracking-tight text-indigo-600 dark:text-[#cdc9e4]">
             Sign in to your account
           </h2>
         </div>
         <div className=" pt-5 pb-16 px-8 text-xs ">
           {/* 🔐 Login Form */}
           <form className="space-y-7" onSubmit={handleSubmit}>
-            <div>
+            <div className="text-[#cdc9e4]" style={{ color: "#cdc9e4" }}>
               <TextField
                 label="Member ID"
                 variant="outlined"
@@ -121,6 +124,9 @@ export default function LoginPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, ofaMemberId: e.target.value })
                 }
+                style={{
+                  backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+                }}
               />
             </div>
 
@@ -132,7 +138,9 @@ export default function LoginPage() {
                 variant="outlined"
                 fullWidth
                 size="small"
-                sx={{}}
+                style={{
+                  backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+                }}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
@@ -150,7 +158,7 @@ export default function LoginPage() {
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-xs text-gray-900"
+                  className="ml-2 block text-xs text-gray-900 dark:text-[#cdc9e4]"
                 >
                   Remember me
                 </label>
@@ -158,7 +166,7 @@ export default function LoginPage() {
               <div className="text-xs">
                 <Link
                   href="/reset-password"
-                  className="font-semibold text-indigo-600 hover:text-indigo-500"
+                  className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-[#cdc9e4]"
                 >
                   Forgot password?
                 </Link>
@@ -177,6 +185,10 @@ export default function LoginPage() {
                 variant="contained"
                 type="submit"
                 color={theme === "dark" ? "warning" : "primary"}
+                style={{
+                  backgroundColor: theme === "dark" ? "#cdc9e4" : "#5a67d8",
+                  color: theme === "dark" ? "#000" : "#fff",
+                }}
               >
                 Sign in
               </Button>
@@ -186,7 +198,7 @@ export default function LoginPage() {
             <div className="flex items-center justify-between text-xs">
               <Link
                 href="/register"
-                className="font-semibold text-indigo-600 hover:text-indigo-500"
+                className="font-semibold text-indigo-600 hover:text-indigo-500 dark:text-[#cdc9e4]"
               >
                 if you Don't have account? click here to register
               </Link>

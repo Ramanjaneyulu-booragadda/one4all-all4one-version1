@@ -160,8 +160,8 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col min-h-screen justify-center items-center bg-gray-100 dark:bg-gray-700 px-4 py-10">
-      <div className="bg-white  dark:bg-gray-200 w-full max-w-2xl rounded-lg shadow-md p-10">
-        <h2 className="text-2xl font-bold mb-6 text-center text-indigo-600  dark:text-gray-500">
+      <div className="bg-white   dark:bg-transparent dark:border-4 dark:border-[#cdc9e4] w-full max-w-2xl rounded-lg shadow-md p-10">
+        <h2 className="text-2xl font-bold mb-6 text-center text-indigo-600  dark:text-[#cdc9e4]">
           Register
         </h2>
 
@@ -174,6 +174,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, fullName: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
 
           <TextField
@@ -185,6 +188,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, mobileNo: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
           <TextField
             label="Email"
@@ -195,6 +201,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
           <TextField
             label="Password"
@@ -205,6 +214,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
           <TextField
             label="Confirm Password"
@@ -215,6 +227,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, confirmPassword: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
           <TextField
             label=""
@@ -223,6 +238,9 @@ export default function RegisterPage() {
             size="small"
             type="date"
             onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
           {/* <TextareaAutosize
             aria-label="empty textarea"
@@ -234,7 +252,12 @@ export default function RegisterPage() {
             }
           /> */}
           <FormControl>
-            <FormLabel id="demo-row-radio-buttons-group-label">
+            <FormLabel
+              id="demo-row-radio-buttons-group-label"
+              style={{
+                color: theme === "dark" ? "#cdc9e4" : "#000",
+              }}
+            >
               Gender
             </FormLabel>
             <RadioGroup
@@ -247,15 +270,31 @@ export default function RegisterPage() {
             >
               <FormControlLabel
                 value="male"
-                control={<Radio />}
+                control={
+                  <Radio
+                    style={{
+                      color: theme === "dark" ? "#cdc9e4" : "#000",
+                    }}
+                  />
+                }
                 label="Male"
-                sx={{ color: "#000" }}
+                style={{
+                  color: theme === "dark" ? "#cdc9e4" : "#000",
+                }}
               />
               <FormControlLabel
                 value="female"
-                control={<Radio />}
+                control={
+                  <Radio
+                    style={{
+                      color: theme === "dark" ? "#cdc9e4" : "#000",
+                    }}
+                  />
+                }
                 label="Female"
-                sx={{ color: "#000" }}
+                style={{
+                  color: theme === "dark" ? "#cdc9e4" : "#000",
+                }}
               />
             </RadioGroup>
           </FormControl>
@@ -263,6 +302,10 @@ export default function RegisterPage() {
             label="Address"
             value={formData.address}
             onChange={(val) => setFormData({ ...formData, address: val })}
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+              color: theme === "dark" ? "#000" : "#fff",
+            }}
           />
 
           <TextField
@@ -273,6 +316,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, pincode: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
 
           <TextField
@@ -283,6 +329,9 @@ export default function RegisterPage() {
             onChange={(e) =>
               setFormData({ ...formData, nationality: e.target.value })
             }
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "",
+            }}
           />
 
           {/* <FormSelect
@@ -314,11 +363,15 @@ export default function RegisterPage() {
             variant="contained"
             type="submit"
             color={theme === "dark" ? "warning" : "primary"}
+            style={{
+              backgroundColor: theme === "dark" ? "#cdc9e4" : "#5a67d8",
+              color: theme === "dark" ? "#000" : "#fff",
+            }}
           >
             Register
           </Button>
           {/* Redirect Link */}
-          <p className="text-sm text-center mt-4 text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-center mt-4 text-gray-500 dark:text-[#cdc9e4]">
             Already have an account?{" "}
             <Link href="/login" className="text-indigo-600 hover:underline">
               Login here
