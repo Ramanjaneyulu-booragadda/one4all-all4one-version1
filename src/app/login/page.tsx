@@ -94,7 +94,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 dark:bg-gray-700">
       <div className="sm:mx-auto sm:w-full sm:max-w-md"></div>
 
-      <div className=" bg-white dark:bg-transparent dark:border-4 dark:border-[#cdc9e4] mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
+      <div className=" bg-white dark:bg-transparent dark:border-2 dark:border-[#cdc9e4] mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
         <div
           className="flex flex-col justify-center py-2 justify-center items-center mt-4 "
           style={{ color: "#cdc9e4" }}

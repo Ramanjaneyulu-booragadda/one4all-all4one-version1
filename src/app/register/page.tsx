@@ -160,7 +160,7 @@ export default function RegisterPage() {
 
   return (
     <div className="flex flex-col min-h-screen justify-center items-center bg-gray-100 dark:bg-gray-700 px-4 py-10">
-      <div className="bg-white   dark:bg-transparent dark:border-4 dark:border-[#cdc9e4] w-full max-w-2xl rounded-lg shadow-md p-10">
+      <div className="bg-white   dark:bg-transparent dark:border-2 dark:border-[#cdc9e4] w-full max-w-2xl rounded-lg shadow-md p-10">
         <h2 className="text-2xl font-bold mb-6 text-center text-indigo-600  dark:text-[#cdc9e4]">
           Register
         </h2>
