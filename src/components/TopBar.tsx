@@ -27,7 +27,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="border-b bg-white p-4 sticky top-0 z-10">
+    <header className="bg-gray-200 dark:bg-gray-700 p-4 sticky top-0 z-10">
       <div className="flex items-center justify-between">
         {/* Logo for mobile view */}
         <div className="flex items-center md:hidden">
@@ -43,7 +43,7 @@ export function TopBar() {
         </div>
 
         {/* Notifications & Avatar */}
-        <div className="flex items-center ml-auto">
+        <div className="flex items-center ml-auto mr-16">
           <Button variant="ghost" size="icon" className="mr-2 relative">
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 bg-red-500 rounded-full w-2 h-2" />
@@ -52,9 +52,14 @@ export function TopBar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full"
+              >
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-blue-800 text-white">JD</AvatarFallback>
+                  <AvatarFallback className="bg-blue-800 text-white">
+                    JD
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -64,7 +69,9 @@ export function TopBar() {
               <DropdownMenuSeparator />
 
               {/* ✅ Profile - Navigate to account page */}
-              <DropdownMenuItem onClick={() => router.push("/dashboard/my-account")}>
+              <DropdownMenuItem
+                onClick={() => router.push("/dashboard/my-account")}
+              >
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>

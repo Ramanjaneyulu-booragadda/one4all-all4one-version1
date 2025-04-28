@@ -11,30 +11,82 @@ import {
   Bell,
   Mail,
   Phone,
-  User
+  User,
 } from "lucide-react";
 
 const sidebarLinks = [
   { icon: <Home size={20} />, label: "Dashboard", href: "/dashboard" },
-  { icon: <ArrowDown size={20} />, label: "Total Members", href: "/dashboard/total-members" },
-  { icon: <ArrowUp size={20} />, label: "Give Help", href: "/dashboard/give-help" },
-  { icon: <ArrowDown size={20} />, label: "Receive Help", href: "/dashboard/receive-help" },
-  { icon: <CreditCard size={20} />, label: "Payment History", href: "/dashboard/payment-history" },
-  { icon: <ArrowUp size={20} />, label: "Give Help History", href: "/dashboard/give-help-history" },
-  { icon: <ArrowDown size={20} />, label: "Receive Help History", href: "/dashboard/receive-help-history" },
-  { icon: <Bell size={20} />, label: "Recent Receive Help", href: "/dashboard/recent-help" },
-  { icon: <CreditCard size={20} />, label: "Withdrawal History", href: "/dashboard/withdrawal-history" },
-  { icon: <Mail size={20} />, label: "Change Email Address", href: "/dashboard/change-email" },
-  { icon: <Settings size={20} />, label: "Change Password", href: "/dashboard/change-password" },
-  { icon: <Phone size={20} />, label: "Change Phone Number", href: "/dashboard/change-phone" },
-  { icon: <User size={20} />, label: "My Account", href: "/dashboard/my-account" },
-  { icon: <FileText size={20} />, label: "Terms of Service", href: "/dashboard/terms" },
+  {
+    icon: <ArrowDown size={20} />,
+    label: "Total Members",
+    href: "/dashboard/total-members",
+  },
+  {
+    icon: <ArrowUp size={20} />,
+    label: "Give Help",
+    href: "/dashboard/give-help",
+  },
+  {
+    icon: <ArrowDown size={20} />,
+    label: "Receive Help",
+    href: "/dashboard/receive-help",
+  },
+  {
+    icon: <CreditCard size={20} />,
+    label: "Payment History",
+    href: "/dashboard/payment-history",
+  },
+  {
+    icon: <ArrowUp size={20} />,
+    label: "Give Help History",
+    href: "/dashboard/give-help-history",
+  },
+  {
+    icon: <ArrowDown size={20} />,
+    label: "Receive Help History",
+    href: "/dashboard/receive-help-history",
+  },
+  {
+    icon: <Bell size={20} />,
+    label: "Recent Receive Help",
+    href: "/dashboard/recent-help",
+  },
+  {
+    icon: <CreditCard size={20} />,
+    label: "Withdrawal History",
+    href: "/dashboard/withdrawal-history",
+  },
+  {
+    icon: <Mail size={20} />,
+    label: "Change Email Address",
+    href: "/dashboard/change-email",
+  },
+  {
+    icon: <Settings size={20} />,
+    label: "Change Password",
+    href: "/dashboard/change-password",
+  },
+  {
+    icon: <Phone size={20} />,
+    label: "Change Phone Number",
+    href: "/dashboard/change-phone",
+  },
+  {
+    icon: <User size={20} />,
+    label: "My Account",
+    href: "/dashboard/my-account",
+  },
+  {
+    icon: <FileText size={20} />,
+    label: "Terms of Service",
+    href: "/dashboard/terms",
+  },
   { icon: <LogOut size={20} />, label: "Logout", href: "/logout" },
 ];
 
 export function Sidebar() {
   return (
-    <aside className="sidebar w-64 flex-shrink-0 h-screen sticky top-0 overflow-y-auto hidden md:block">
+    <aside className="bg-indigo-900 dark:bg-gray-800 w-64 flex-shrink-0 h-screen sticky top-0 overflow-y-auto hidden md:block">
       <div className="p-4">
         <Link href="/dashboard" className="flex items-center mb-8">
           <div className="text-xl font-bold text-white">
