@@ -9,7 +9,7 @@ import {
   DollarSign,
   TrendingUp,
   Bell,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import TotalMembersPage from "./total-members/page";
@@ -29,7 +29,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Welcome, John Doe</span>
+          <span className="text-sm text-muted-foreground">
+            Welcome, John Doe
+          </span>
         </div>
       </div>
 
@@ -48,7 +50,9 @@ export default function DashboardPage() {
         </Card>
         <Card className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Total Received</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Received
+            </CardTitle>
             <ArrowDown className="w-4 h-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -60,26 +64,26 @@ export default function DashboardPage() {
         </Card>
         <Card className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Pending Withdrawals</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Withdrawals
+            </CardTitle>
             <DollarSign className="w-4 h-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$1,890</div>
-            <p className="text-xs text-muted-foreground">
-              2 pending requests
-            </p>
+            <p className="text-xs text-muted-foreground">2 pending requests</p>
           </CardContent>
         </Card>
         <Card className="dashboard-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Recent Activity
+            </CardTitle>
             <Bell className="w-4 h-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">7</div>
-            <p className="text-xs text-muted-foreground">
-              New notifications
-            </p>
+            <p className="text-xs text-muted-foreground">New notifications</p>
           </CardContent>
         </Card>
       </div>
@@ -91,7 +95,7 @@ export default function DashboardPage() {
           <TabsTrigger value="payment-history">Payment History</TabsTrigger>
           <TabsTrigger value="recent-help">Recent Help</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="give-help" className="space-y-4">
           <GiveHelpSection />
         </TabsContent>
@@ -106,7 +110,7 @@ export default function DashboardPage() {
         </TabsContent>
       </Tabs>
       <Tabs defaultValue="total-members" className="space-y-4">
-      <TabsContent value="total-members" className="space-y-4">
+        <TabsContent value="total-members" className="space-y-4">
           <TotalMembersPage />
         </TabsContent>
       </Tabs>
@@ -118,7 +122,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="h-[200px] flex items-center justify-center bg-gray-100 rounded-md">
               <BarChart3 className="h-8 w-8 text-muted-foreground" />
-              <span className="ml-2 text-muted-foreground">Account statistics chart</span>
+              <span className="ml-2 text-muted-foreground">
+                Account statistics chart
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -128,16 +134,28 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Link href="/dashboard/give-help" className="block w-full p-2 text-center rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200">
+              <Link
+                href="/dashboard/give-help"
+                className="block w-full p-2 text-center rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
+              >
                 Give Help
               </Link>
-              <Link href="/dashboard/receive-help" className="block w-full p-2 text-center rounded-md bg-green-100 text-green-700 hover:bg-green-200">
+              <Link
+                href="/dashboard/receive-help"
+                className="block w-full p-2 text-center rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+              >
                 Receive Help
               </Link>
-              <Link href="/dashboard/withdrawal" className="block w-full p-2 text-center rounded-md bg-yellow-100 text-yellow-700 hover:bg-yellow-200">
+              <Link
+                href="/dashboard/withdrawal"
+                className="block w-full p-2 text-center rounded-md bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+              >
                 Request Withdrawal
               </Link>
-              <Link href="/dashboard/my-account" className="block w-full p-2 text-center rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200">
+              <Link
+                href="/dashboard/my-account"
+                className="block w-full p-2 text-center rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+              >
                 Update Profile
               </Link>
             </div>
@@ -150,10 +168,34 @@ export default function DashboardPage() {
 
 function GiveHelpSection() {
   const giveHelpData = [
-    { id: "GH001", date: "2023-10-15", amount: "$500", status: "Completed", recipient: "Jane Smith" },
-    { id: "GH002", date: "2023-11-02", amount: "$750", status: "Completed", recipient: "Mike Johnson" },
-    { id: "GH003", date: "2023-12-18", amount: "$1,200", status: "Completed", recipient: "Sarah Williams" },
-    { id: "GH004", date: "2024-01-05", amount: "$350", status: "Pending", recipient: "Robert Brown" },
+    {
+      id: "GH001",
+      date: "2023-10-15",
+      amount: "$500",
+      status: "Completed",
+      recipient: "Jane Smith",
+    },
+    {
+      id: "GH002",
+      date: "2023-11-02",
+      amount: "$750",
+      status: "Completed",
+      recipient: "Mike Johnson",
+    },
+    {
+      id: "GH003",
+      date: "2023-12-18",
+      amount: "$1,200",
+      status: "Completed",
+      recipient: "Sarah Williams",
+    },
+    {
+      id: "GH004",
+      date: "2024-01-05",
+      amount: "$350",
+      status: "Pending",
+      recipient: "Robert Brown",
+    },
   ];
 
   return (
@@ -167,11 +209,21 @@ function GiveHelpSection() {
             <table className="w-full caption-bottom text-sm">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Recipient</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    ID
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Date
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Amount
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Status
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Recipient
+                  </th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -184,9 +236,13 @@ function GiveHelpSection() {
                     <td className="p-4 align-middle">{item.date}</td>
                     <td className="p-4 align-middle">{item.amount}</td>
                     <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          item.status === "Completed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
                         {item.status}
                       </span>
                     </td>
@@ -204,10 +260,34 @@ function GiveHelpSection() {
 
 function ReceiveHelpSection() {
   const receiveHelpData = [
-    { id: "RH001", date: "2023-09-20", amount: "$650", status: "Received", sender: "Alex Thompson" },
-    { id: "RH002", date: "2023-10-07", amount: "$800", status: "Received", sender: "Lisa Anderson" },
-    { id: "RH003", date: "2023-11-15", amount: "$450", status: "Received", sender: "David Wilson" },
-    { id: "RH004", date: "2024-01-10", amount: "$900", status: "Pending", sender: "Emma Davis" },
+    {
+      id: "RH001",
+      date: "2023-09-20",
+      amount: "$650",
+      status: "Received",
+      sender: "Alex Thompson",
+    },
+    {
+      id: "RH002",
+      date: "2023-10-07",
+      amount: "$800",
+      status: "Received",
+      sender: "Lisa Anderson",
+    },
+    {
+      id: "RH003",
+      date: "2023-11-15",
+      amount: "$450",
+      status: "Received",
+      sender: "David Wilson",
+    },
+    {
+      id: "RH004",
+      date: "2024-01-10",
+      amount: "$900",
+      status: "Pending",
+      sender: "Emma Davis",
+    },
   ];
 
   return (
@@ -221,11 +301,21 @@ function ReceiveHelpSection() {
             <table className="w-full caption-bottom text-sm">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Sender</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    ID
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Date
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Amount
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Status
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Sender
+                  </th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -238,9 +328,13 @@ function ReceiveHelpSection() {
                     <td className="p-4 align-middle">{item.date}</td>
                     <td className="p-4 align-middle">{item.amount}</td>
                     <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.status === "Received" ? "bg-blue-100 text-blue-800" : "bg-yellow-100 text-yellow-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          item.status === "Received"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
                         {item.status}
                       </span>
                     </td>
@@ -258,10 +352,34 @@ function ReceiveHelpSection() {
 
 function PaymentHistorySection() {
   const paymentHistoryData = [
-    { id: "P001", date: "2023-10-05", amount: "$500", method: "Credit Card", type: "Give Help" },
-    { id: "P002", date: "2023-10-20", amount: "$650", method: "Bank Transfer", type: "Receive Help" },
-    { id: "P003", date: "2023-11-12", amount: "$800", method: "Credit Card", type: "Give Help" },
-    { id: "P004", date: "2023-12-01", amount: "$450", method: "Bank Transfer", type: "Receive Help" },
+    {
+      id: "P001",
+      date: "2023-10-05",
+      amount: "$500",
+      method: "Credit Card",
+      type: "Give Help",
+    },
+    {
+      id: "P002",
+      date: "2023-10-20",
+      amount: "$650",
+      method: "Bank Transfer",
+      type: "Receive Help",
+    },
+    {
+      id: "P003",
+      date: "2023-11-12",
+      amount: "$800",
+      method: "Credit Card",
+      type: "Give Help",
+    },
+    {
+      id: "P004",
+      date: "2023-12-01",
+      amount: "$450",
+      method: "Bank Transfer",
+      type: "Receive Help",
+    },
   ];
 
   return (
@@ -275,11 +393,21 @@ function PaymentHistorySection() {
             <table className="w-full caption-bottom text-sm">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Method</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Type</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    ID
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Date
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Amount
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Method
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Type
+                  </th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -293,9 +421,13 @@ function PaymentHistorySection() {
                     <td className="p-4 align-middle">{item.amount}</td>
                     <td className="p-4 align-middle">{item.method}</td>
                     <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.type === "Give Help" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          item.type === "Give Help"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
+                      >
                         {item.type}
                       </span>
                     </td>
@@ -312,10 +444,34 @@ function PaymentHistorySection() {
 
 function RecentHelpSection() {
   const recentHelpData = [
-    { id: "RR001", date: "2024-01-15", amount: "$750", status: "Pending", sender: "Michael Scott" },
-    { id: "RR002", date: "2024-01-10", amount: "$500", status: "Received", sender: "Jim Halpert" },
-    { id: "RR003", date: "2024-01-05", amount: "$900", status: "Received", sender: "Pam Beesly" },
-    { id: "RR004", date: "2024-01-01", amount: "$600", status: "Received", sender: "Dwight Schrute" },
+    {
+      id: "RR001",
+      date: "2024-01-15",
+      amount: "$750",
+      status: "Pending",
+      sender: "Michael Scott",
+    },
+    {
+      id: "RR002",
+      date: "2024-01-10",
+      amount: "$500",
+      status: "Received",
+      sender: "Jim Halpert",
+    },
+    {
+      id: "RR003",
+      date: "2024-01-05",
+      amount: "$900",
+      status: "Received",
+      sender: "Pam Beesly",
+    },
+    {
+      id: "RR004",
+      date: "2024-01-01",
+      amount: "$600",
+      status: "Received",
+      sender: "Dwight Schrute",
+    },
   ];
 
   return (
@@ -329,11 +485,21 @@ function RecentHelpSection() {
             <table className="w-full caption-bottom text-sm">
               <thead className="[&_tr]:border-b">
                 <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                  <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Date</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Amount</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-                  <th className="h-12 px-4 text-left align-middle font-medium">Sender</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    ID
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Date
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Amount
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Status
+                  </th>
+                  <th className="h-12 px-4 text-left align-middle font-medium">
+                    Sender
+                  </th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -346,9 +512,13 @@ function RecentHelpSection() {
                     <td className="p-4 align-middle">{item.date}</td>
                     <td className="p-4 align-middle">{item.amount}</td>
                     <td className="p-4 align-middle">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.status === "Received" ? "bg-blue-100 text-blue-800" : "bg-yellow-100 text-yellow-800"
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          item.status === "Received"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
                         {item.status}
                       </span>
                     </td>
