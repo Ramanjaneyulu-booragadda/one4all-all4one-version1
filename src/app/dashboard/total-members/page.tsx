@@ -75,8 +75,8 @@ export default function TotalMembersPage() {
    */
   const filterHierarchy = (node: any): any | null => {
     const matchesSearch =
-      node.memberId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+      (node.memberId?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (node.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
 
     const status =
       node.leftOverChildrenPosition === 0 ? "complete" :

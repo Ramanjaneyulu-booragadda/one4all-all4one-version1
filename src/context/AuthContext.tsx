@@ -48,6 +48,7 @@ interface AuthContextType {
   isAuthReady: boolean; // 👈 NEW!
   login: (token: string, memberId: string, roles: string[]) => void;
   logout: () => void;
+  getRoles?: () => string[]; // ✅ Added getRoles as an optional method
 }
 
 // Initialize the context object (no default value needed)
@@ -143,7 +144,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("❗useAuth must be used inside <AuthProvider>");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context;
+
+  // Helper function to decode JWT and get roles
+  const decodeJWT = (token: string): any => {
+    try {
+      const base64Url = token.split('.')[1]; // Get the payload part of the JWT
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Failed to decode JWT:', error);
+      return null;
+    }
+  };
+
+  const getRoles = (): string[] => {
+    if (!context.userToken) return [];
+    try {
+      const parsedToken = decodeJWT(context.userToken);
+      return parsedToken?.roles || [];
+    } catch (error) {
+      console.error('Failed to parse userToken for roles:', error);
+      return [];
+    }
+  };
+
+  return { ...context, getRoles };
 };

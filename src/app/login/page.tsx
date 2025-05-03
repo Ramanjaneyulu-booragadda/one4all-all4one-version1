@@ -18,6 +18,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
 import { useTheme } from "@/context/ThemeContext";
+import { ROLES } from "@/utils/roles";
 export default function LoginPage() {
   const { theme } = useTheme(); // To get the current theme
   const router = useRouter();
@@ -72,8 +73,13 @@ export default function LoginPage() {
           extractedRoles // ✅ Array of role names like ["ONE4ALL_USER_RO", "ONE4ALL_ADMIN_RW"]
         );
         // console.log("✅ Login successful:", result);
-        toast.success("Login successful!", { theme: "colored" });
-        router.push("/dashboard");
+        // Determine the default route based on roles
+        const isAdmin = extractedRoles.some((role: any) => [ROLES.ADMIN_RW,ROLES.ADMIN_RO].includes(role));
+        const defaultRoute = isAdmin ? "/dashboard" : "/dashboard/give-help";
+
+        // Navigate to the appropriate route
+        toast.success("Login successful! Redirecting...", { theme: "colored" });
+        router.push(defaultRoute);
       } catch (error) {
         console.error("❌ Login failed:", error);
         setError("Please check your credentials and try again.");

@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import TotalMembersPage from "./total-members/page";
 import { useAuth } from "@/context/AuthContext"; // Add this import
+import { useEffect } from "react";
 export default function DashboardPage() {
   const { isAuthReady } = useAuth(); // Use auth readiness state
 

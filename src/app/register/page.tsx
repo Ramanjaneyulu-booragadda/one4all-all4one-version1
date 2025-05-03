@@ -75,14 +75,17 @@ export default function RegisterPage() {
 
   const validateForm = (data: FormData): string[] => {
     const errors = [
-      ...validationUtils.validateGender(data.gender),
-      ...validationUtils.validateAge(data.dob),
-      ...validationUtils.validateNumber(data.pincode, "Pincode"),
-      ...validationUtils.validateNumber(data.mobileNo, "Mobile Number"),
+      ...validationUtils.validateGender(data.gender || ""),
+      ...validationUtils.validateAge(data.dob || ""),
+      ...validationUtils.validateNumber(data.pincode || "", "Pincode"),
+      ...validationUtils.validateNumber(data.mobileNo || "", "Mobile Number"),
       ...validationUtils.validatePasswordMatch(
-        data.password,
-        data.confirmPassword
+        data.password || "",
+        data.confirmPassword || ""
       ),
+      ...validationUtils.validateInputString(data.fullName || "", "Full Name"),
+      ...validationUtils.validateInputString(data.address || "", "Address"),
+      ...validationUtils.validateInputString(data.email || "", "Email"),
     ];
     setValidationErrors(errors);
     return errors;
@@ -117,10 +120,10 @@ export default function RegisterPage() {
             ofaEmail: data.email,
             ofaNationality: data.nationality,
             ofaPassword: data.password,
-            ofaCreatedBy: role,
-            ofaCreatedDt: new Date().toISOString().split("T")[0],
-            ofaUpdatedBy: role,
-            ofaUpdatedDt: new Date().toISOString().split("T")[0],
+            ofaCreatedBy: "user",
+            ofaCreatedDt: new Date().toISOString(),
+            ofaUpdatedBy: "user",
+            ofaUpdatedDt: new Date().toISOString(),
             ofaIsDeleted: 0,
           }),
         },
@@ -167,7 +170,7 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <TextField
-            label="Member ID"
+            label="Full Name"
             variant="outlined"
             fullWidth
             size="small"
@@ -242,15 +245,6 @@ export default function RegisterPage() {
               backgroundColor: theme === "dark" ? "#cdc9e4" : "",
             }}
           />
-          {/* <TextareaAutosize
-            aria-label="empty textarea"
-            placeholder="Address"
-            minRows={3}
-            maxRows={4}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-          /> */}
           <FormControl>
             <FormLabel
               id="demo-row-radio-buttons-group-label"
@@ -298,13 +292,22 @@ export default function RegisterPage() {
               />
             </RadioGroup>
           </FormControl>
-          <FormTextArea
-            label="Address"
+          <TextareaAutosize
+            aria-label="Address"
+            placeholder="Enter your address"
+            minRows={3}
+            maxRows={4}
             value={formData.address}
-            onChange={(val) => setFormData({ ...formData, address: val })}
+            onChange={(e) =>
+              setFormData({ ...formData, address: e.target.value })
+            }
             style={{
               backgroundColor: theme === "dark" ? "#cdc9e4" : "",
-              color: theme === "dark" ? "#000" : "#fff",
+              color: theme === "dark" ? "#000" : "#000",
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
             }}
           />
 
@@ -383,13 +386,18 @@ export default function RegisterPage() {
       {toastType && (
         <Toast
           type={toastType}
-          message={toastMessage}
+          message={
+            toastType === "success"
+              ? "🎉 Your registration is successful! Please note down your details below."
+              : toastMessage
+          }
+          successData={successData || undefined}
           onClose={() => {
             setToastType(null);
             setToastMessage("");
             setSuccessData(null);
             if (toastType === "success") {
-              window.location.href = "/login";
+              window.location.href = "/login"; // Navigate to login page
             }
           }}
         />
@@ -465,19 +473,20 @@ const FormSelect = ({ label, value, onChange, options }: FormSelectProps) => (
 interface FormTextAreaProps {
   label: string;
   value: string;
-  onChange: (val: string) => void;
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
 }
 
-const FormTextArea = ({ label, value, onChange }: FormTextAreaProps) => (
+const FormTextArea = ({ label, value, onChange, ...rest }: FormTextAreaProps & React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">
       {label}
     </label>
     <textarea
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={onChange}
       required
       className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent text-black"
+      {...rest}
     />
   </div>
 );
