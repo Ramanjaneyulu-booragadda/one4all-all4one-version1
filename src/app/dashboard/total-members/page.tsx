@@ -9,24 +9,24 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import TreeGraph from "@/components/TreeGraph";
 import { useAuth } from "@/context/AuthContext";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Calendar, Download, Filter, Search } from "lucide-react";
+import Flow from "@/components/graph/view";
 import { baseApiURL } from "@/utils/constants";
 export default function TotalMembersPage() {
   const { memberId, isAuthReady } = useAuth();
   const authFetch = useAuthFetch();
   const [hierarchyData, setHierarchyData] = useState<any | null>(null);
-  const [orientation, setOrientation] = useState<"vertical" | "horizontal">(
-    "vertical"
-  );
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "complete" | "partial" | "not-filled"
-  >("all");
+  // const [orientation, setOrientation] = useState<"vertical" | "horizontal">(
+  // "vertical"
+  // );
+  // // const [searchTerm, setSearchTerm] = useState("");
+  // const [statusFilter, setStatusFilter] = useState<
+  //   "all" | "complete" | "partial" | "not-filled"
+  // >("all");
 
   /**
    * Fetch the downliner hierarchy when memberId becomes available
@@ -43,45 +43,46 @@ export default function TotalMembersPage() {
         );
         const data = await res.json();
         setHierarchyData(data);
+        console.log("Hierarchy data:", data);
       } catch (err) {
         console.error("❌ Failed to fetch hierarchy:", err);
       }
     };
 
     fetchHierarchy();
-  }, [isAuthReady, memberId]);
+  }, []);
   // 🔍 Recursive filter logic for search & status
-  const filterHierarchy = (node: any): any | null => {
-    const matchesSearch =
-      node.memberId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+  // const filterHierarchy = (node: any): any | null => {
+  //   const matchesSearch =
+  //     node.memberId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     node.fullName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const status =
-      node.leftOverChildrenPosition === 0
-        ? "complete"
-        : node.leftOverChildrenPosition === 2
-        ? "not-filled"
-        : "partial";
+  //   const status =
+  //     node.leftOverChildrenPosition === 0
+  //       ? "complete"
+  //       : node.leftOverChildrenPosition === 2
+  //       ? "not-filled"
+  //       : "partial";
 
-    const matchesStatus = statusFilter === "all" || statusFilter === status;
+  //   const matchesStatus = statusFilter === "all" || statusFilter === status;
 
-    const filteredChildren = node.children
-      ?.map(filterHierarchy)
-      .filter((child: any) => child !== null);
+  //   const filteredChildren = node.children
+  //     ?.map(filterHierarchy)
+  //     .filter((child: any) => child !== null);
 
-    const shouldInclude = matchesSearch && matchesStatus;
+  //   const shouldInclude = matchesSearch && matchesStatus;
 
-    if (shouldInclude || (filteredChildren && filteredChildren.length > 0)) {
-      return { ...node, children: filteredChildren || [] };
-    }
+  //   if (shouldInclude || (filteredChildren && filteredChildren.length > 0)) {
+  //     return { ...node, children: filteredChildren || [] };
+  //   }
 
-    return null;
-  };
+  //   return null;
+  // };
 
-  const filteredTree = useMemo(() => {
-    if (!hierarchyData) return null;
-    return filterHierarchy(hierarchyData);
-  }, [hierarchyData, searchTerm, statusFilter]);
+  // const filteredTree = useMemo(() => {
+  //   if (!hierarchyData) return null;
+  //   return filterHierarchy(hierarchyData);
+  // }, [hierarchyData, searchTerm, statusFilter]);
 
   return (
     <div className="space-y-6">
@@ -97,7 +98,7 @@ export default function TotalMembersPage() {
         <CardHeader>
           {/* Optional filters or search */}
           <div className="flex flex-wrap gap-2 mt-2">
-            <div className="relative w-full sm:w-auto">
+            {/* <div className="relative w-full sm:w-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
@@ -106,9 +107,9 @@ export default function TotalMembersPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </div>
+            </div> */}
             {/* 🎨 Status Filter */}
-            <select
+            {/* <select
               className="border h-9 rounded px-3 text-sm"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -117,10 +118,10 @@ export default function TotalMembersPage() {
               <option value="complete">Complete</option>
               <option value="partial">Partial</option>
               <option value="not-filled">Not Filled</option>
-            </select>
+            </select> */}
 
             {/* ↕️ Orientation */}
-            <Button
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={() =>
@@ -130,17 +131,20 @@ export default function TotalMembersPage() {
               }
             >
               {orientation === "vertical" ? "🔁 Horizontal" : "↕️ Vertical"}
-            </Button>
+            </Button> */}
           </div>
         </CardHeader>
         <CardContent>
-          {hierarchyData ? (
-            <TreeGraph data={filteredTree} orientation={orientation} />
-          ) : (
-            <p className="text-gray-500 text-sm">
-              Loading hierarchy or no matching results......
-            </p>
-          )}
+          {
+            hierarchyData && <Flow data={hierarchyData} />
+            // (
+            //   <TreeGraph data={filteredTree} orientation={orientation} />
+            // ) : (
+            //   <p className="text-gray-500 text-sm">
+            //     Loading hierarchy or no matching results......
+            //   </p>
+            // )
+          }
         </CardContent>
       </Card>
     </div>
