@@ -42,6 +42,15 @@ export function TopBar() {
           </span>
         </div>
 
+        {/* Logo for larger screens */}
+        <div className="hidden md:flex items-center">
+          <span className="text-xl font-bold">
+            <span className="text-yellow-400">One4All</span>
+            <span className="text-black">-</span>
+            <span className="text-blue-500">All4One</span>
+          </span>
+        </div>
+
         {/* Notifications & Avatar */}
         <div className="flex items-center ml-auto mr-16">
           <Button variant="ghost" size="icon" className="mr-2 relative">

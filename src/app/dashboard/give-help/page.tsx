@@ -103,6 +103,12 @@ export default function GiveHelpPage() {
   }, [memberId]);
 
   const openHelpModal = (request: HelpRequest) => {
+    // Validation: Check if the memberId starts with 'SPLNO4AA4O'
+    if (memberId?.startsWith('SPLNO4AA4O')) {
+      setErrorPopup("Special members are not required to help their upliners.");
+      return;
+    }
+
     setSelectedRequest(request);
     setSenderId(memberId || "");
     setModalOpen(true);
@@ -110,7 +116,13 @@ export default function GiveHelpPage() {
 
   const handleSubmit = async () => {
     if (!selectedRequest || !file) return;
-  
+
+    // Validation: Check if the helping amount exceeds the available balance
+    if (stats && selectedRequest.levelAmount > stats.availableBalance) {
+      setErrorPopup("The helping amount exceeds your available balance. Please adjust the amount.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("ofaMemberId", senderId);
     formData.append("receiverMemberId", selectedRequest.uplinerMemberId);
@@ -118,25 +130,25 @@ export default function GiveHelpPage() {
     formData.append("amount", String(selectedRequest.levelAmount)); // ✅ backend expects this
     formData.append("uplinerLevel", String(selectedRequest.uplinerLevel));
     formData.append("proofUrl", file); // ✅ file field stays same
-  
+
     try {
       const response = await authFetch("http://localhost:9090/api/help/give", {
         method: "POST",
         body: formData,
       }, true);
-  
+
       const json = await response.json();
-  
+
       if (!response.ok) {
         // 🔴 Extract backend error if available
-      const backendMessage =
-      json?.messageText ||
-      json?.errorDetails?.description ||
-      "Help submission failed. Please try again.";
-    setErrorPopup(backendMessage);
-    return;
+        const backendMessage =
+          json?.messageText ||
+          json?.errorDetails?.description ||
+          "Help submission failed. Please try again.";
+        setErrorPopup(backendMessage);
+        return;
       }
-  
+
       const record = json.message?.[0]?.data;
       if (record?.submissionReferenceId) {
         setPopupData({
@@ -147,7 +159,7 @@ export default function GiveHelpPage() {
       } else {
         setErrorPopup("No transaction reference ID returned. Upload may have failed.");
       }
-  
+
     } catch (error) {
       console.error("Unexpected error submitting help:", error);
       setErrorPopup("Something went wrong. Please try again later.");
@@ -258,7 +270,9 @@ export default function GiveHelpPage() {
                       <td className="px-4 py-2">{req.uplinerName}</td>
                       <td className="px-4 py-2">{req.uplinerMobileNo}</td>
                       <td className="px-4 py-2">{req.levelAmount}</td>
-                      <td className="px-4 py-2">{req.status}</td>
+                      <td className="px-4 py-2">
+                        {req.status === "RECEIVED" ? "PAID" : req.status}
+                      </td>
                       <td className="px-4 py-2">
                         {req.proofUrl ? (
                           <a href={req.proofUrl} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>

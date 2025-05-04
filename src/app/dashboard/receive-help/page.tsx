@@ -24,12 +24,10 @@ interface ReceivedHelp {
   requestReceivedAt: string;
   requestModifiedAt: string;
   status: "PROCESSING" | "RECEIVED" | "NOT RECEIVED" ;
-  proofUrl?: string;
+  proofDoc?: string;
   transactionId: string;
   verifiedBy?: string;
 }
-
-
 
 export default function ReceiveHelpPage() {
   const authFetch = useAuthFetch();
@@ -41,7 +39,7 @@ export default function ReceiveHelpPage() {
     thisMonth: 0,
     approved: 0,
     rejected: 0,
-    totalReceivedRequestCount: 0,
+    totalRequestCount: 0,
   });
 
   const [loading, setLoading] = useState(false);
@@ -52,7 +50,9 @@ export default function ReceiveHelpPage() {
   const [status, setStatus] = useState<"PROCESSING" | "RECEIVED" | "NOT RECEIVED">("PROCESSING");
   const [comments, setComments] = useState("");
   const [successPopup, setSuccessPopup] = useState<string | null>(null);
-const [errorPopup, setErrorPopup] = useState<string | null>(null);
+  const [errorPopup, setErrorPopup] = useState<string | null>(null);
+
+  const [currentHelpStatus, setCurrentHelpStatus] = useState("Not Active");
 
   // 🔄 Fetch receive help data
   useEffect(() => {
@@ -79,8 +79,8 @@ const [errorPopup, setErrorPopup] = useState<string | null>(null);
             requestReceivedAt: item.requestReceivedAt?.split("T")[0],
             requestModifiedAt: item.requestModifiedAt?.split("T")[0],
             status: item.status,
-            proofUrl: item.proofUrl,
-            verifiedBy: item.verifiedBy, // ✅ Add this
+            proofDoc: item.proofDoc,
+            verifiedBy: item.memberId, // ✅ Add this
           }))
         );
 
@@ -89,7 +89,7 @@ const [errorPopup, setErrorPopup] = useState<string | null>(null);
           thisMonth: summary.thisMonthReceivedAmount || 0,
           approved: summary.approvedRequestCount || 0,
           rejected: summary.rejectedRequestCount || 0,
-          totalReceivedRequestCount: summary.totalReceivedRequestCount || 0,
+          totalRequestCount: summary.totalRequestCount || 0,
         });
       } catch (err) {
         console.error("Error fetching receive help data:", err);
@@ -101,6 +101,19 @@ const [errorPopup, setErrorPopup] = useState<string | null>(null);
 
     if (memberId) fetchData();
   }, [memberId]);
+
+  useEffect(() => {
+    // Check if Level 1 upliner has confirmed receipt
+    const level1Confirmed = helpList.some(
+      (item) => item.status === "RECEIVED" && item.id === "LEVEL_1"
+    );
+
+    if (level1Confirmed) {
+      setCurrentHelpStatus("Active");
+    } else {
+      setCurrentHelpStatus("Not Active");
+    }
+  }, [helpList]);
 
   const openModal = (entry: ReceivedHelp) => {
     setSelected(entry);
@@ -129,38 +142,37 @@ const [errorPopup, setErrorPopup] = useState<string | null>(null);
 
       const json = await response.json();
 
-  if (!response.ok) {
-    const backendMessage =
-      json?.messageText ||
-      json?.errorDetails?.description ||
-      "Help verification failed. Try again.";
-    setErrorPopup(backendMessage);
-    return;
-  }
+      if (!response.ok) {
+        const backendMessage =
+          json?.messageText ||
+          json?.errorDetails?.description ||
+          "Help verification failed. Try again.";
+        setErrorPopup(backendMessage);
+        return;
+      }
 
-  const record = json?.message?.[0]?.data;
+      const record = json?.message?.[0]?.data;
 
-if (record) {
-  setSuccessPopup(
-    `Help from ${record.senderMemberId} of ₹${record.submittedAmount} has been ${record.submissionStatus}. Verified by ${record.verifiedBy} on ${new Date(record.verificationDate).toLocaleString()}.`
-  );
+      if (record) {
+        setSuccessPopup(
+          `Help from ${record.senderMemberId} of ₹${record.submittedAmount} has been ${record.submissionStatus}. Verified by ${record.verifiedBy} on ${new Date(record.verificationDate).toLocaleString()}.`
+        );
 
-  // ✅ Update UI status to disable button later
-  const updatedList = helpList.map((item) =>
-    item.id === selected.id
-      ? {
-          ...item,
-          status: record.submissionStatus,
-          verifiedBy: record.verifiedBy,
-        }
-      : item
-  );
-  setHelpList(updatedList);
-  
-}
+        // ✅ Update UI status to disable button later
+        const updatedList = helpList.map((item) =>
+          item.id === selected.id
+            ? {
+                ...item,
+                status: record.submissionStatus,
+                verifiedBy: record.verifiedBy,
+              }
+            : item
+        );
+        setHelpList(updatedList);
+      }
 
-  setModalOpen(false);
-  setComments("");
+      setModalOpen(false);
+      setComments("");
     } catch (err) {
       setErrorPopup("Verification failed. Try again later.");
       console.error("Verification submit error:", err);
@@ -195,9 +207,7 @@ if (record) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        
-
-      <Card>
+        <Card>
           <CardHeader className="pb-3">
             <CardTitle>Help Statistics</CardTitle>
             <CardDescription>Your help receiving summary</CardDescription>
@@ -222,7 +232,7 @@ if (record) {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm">Total Received Request count:</span>
-                <span className="font-medium">{summaryStats.totalReceivedRequestCount}</span>
+                <span className="font-medium">{summaryStats.totalRequestCount}</span>
               </div>
             </div>
           </CardContent>
@@ -235,8 +245,18 @@ if (record) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center space-y-2">
-              <div className="h-24 w-24 rounded-full bg-green-100 flex items-center justify-center">
-                <span className="text-green-700 text-xl font-bold">Active</span>
+              <div className="h-28 w-28 rounded-full bg-green-100 flex items-center justify-center">
+                <div className={`h-28 w-28 rounded-full flex items-center justify-center ${
+                  currentHelpStatus === "Active" ? "bg-green-100" : "bg-red-100"
+                }`}>
+                  <span
+                    className={`text-xl font-bold ${
+                      currentHelpStatus === "Active" ? "text-green-700" : "text-red-700"
+                    }`}
+                  >
+                    {currentHelpStatus}
+                  </span>
+                </div>
               </div>
               <h3 className="font-medium text-center">You're eligible to receive help</h3>
               <p className="text-xs text-muted-foreground text-center">
@@ -245,7 +265,12 @@ if (record) {
             </div>
           </CardContent>
           <CardFooter className="flex justify-center">
-            <Button className="w-full btn-primary">Request Help Now</Button>
+            <Button 
+              className="w-full btn-primary" 
+              disabled={currentHelpStatus !== "Active"}
+            >
+              Request Help Now
+            </Button>
           </CardFooter>
         </Card>
       </div>
@@ -261,86 +286,79 @@ if (record) {
         </div>
       </div>
 
-      
-        
-        
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Received Help Details</CardTitle>
-              <CardDescription>Help that is currently being processed</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <div className="w-full overflow-auto">
-                  <table className="w-full caption-bottom text-sm">
-                    <thead className="[&_tr]:border-b">
-                      <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                        <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Received From</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Received Amount</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Transaction ID</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Request Received At</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Request Modified At</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">status Modified By</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">proof of Documents</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Request Status</th>
-                        <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                {helpList.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-4 py-2">{item.id}</td>
-                    <td className="px-4 py-2">{item.receivedFrom}</td>
-                    <td className="px-4 py-2">{item.receivedAmount}</td>
-                    <td className="px-4 py-2">{item.transactionId}</td>
-                    <td className="px-4 py-2">{item.requestReceivedAt}</td>
-                    <td className="px-4 py-2">{item.requestModifiedAt}</td>
-                    <td className="px-4 py-2">{item.verifiedBy}</td>
-                    <td className="px-4 py-2">
-                      {item.proofUrl ? (
-                        <a href={item.proofUrl} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">N/A</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        item.status === "PROCESSING"
-                          ? "bg-blue-100 text-blue-800"
-                          : item.status === "RECEIVED"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}>
-                        <Clock className="mr-1 h-3 w-3" />
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">
-                      
-                        
-                      <Button
-                      variant={(item.status as string) === "RECEIVED" ? "secondary" : "outline"}
-                      size="sm"
-                      className={(item.status as string) === "RECEIVED" ? "bg-green-100 text-green-800" : ""}
-                      onClick={() => openModal(item)}
-                      disabled={item.status !== "PROCESSING"}
-                    >
-                      {(item.status as string) === "RECEIVED" ? "Verified" : "Verify"}
-                    </Button>
-                    
-                      
-                    </td>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Received Help Details</CardTitle>
+          <CardDescription>Help that is currently being processed</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <div className="w-full overflow-auto">
+              <table className="w-full caption-bottom text-sm">
+                <thead className="[&_tr]:border-b">
+                  <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                    <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Received From</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Received Amount</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Transaction ID</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Request Received At</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Request Modified At</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">status Modified By</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">proof of Documents</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Request Status</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
                   </tr>
-                ))}
-              </tbody>
-                  </table>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+                </thead>
+                <tbody>
+                  {helpList.map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-4 py-2">{item.id}</td>
+                      <td className="px-4 py-2">{item.receivedFrom}</td>
+                      <td className="px-4 py-2">{item.receivedAmount}</td>
+                      <td className="px-4 py-2">{item.transactionId}</td>
+                      <td className="px-4 py-2">{item.requestReceivedAt}</td>
+                      <td className="px-4 py-2">{item.requestModifiedAt}</td>
+                      <td className="px-4 py-2">{item.verifiedBy}</td>
+                      <td className="px-4 py-2">
+                        {item.proofDoc ? (
+                          <a href={item.proofDoc} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          item.status === "PROCESSING"
+                            ? "bg-blue-100 text-blue-800"
+                            : item.status === "RECEIVED"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          <Clock className="mr-1 h-3 w-3" />
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2">
+                        <Button
+                          variant={(item.status as string) === "RECEIVED" ? "secondary" : "outline"}
+                          size="sm"
+                          className={(item.status as string) === "RECEIVED" ? "bg-green-100 text-green-800" : ""}
+                          onClick={() => openModal(item)}
+                          disabled={item.status !== "PROCESSING"}
+                        >
+                          {(item.status as string) === "RECEIVED" ? "Verified" : "Verify"}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Review Help Payment</DialogTitle>

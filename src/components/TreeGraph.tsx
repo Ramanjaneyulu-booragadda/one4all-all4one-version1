@@ -3,14 +3,15 @@
 /**
  * TreeGraph.tsx
  * ------------------------
- * Renders a binary tree visualization using ReactFlow.
- * Supports:
- *  - Add referral via modal popup
- *  - Node coloring based on completion
- *  - Orientation toggle (vertical or horizontal)
+ * Displays a binary tree using ReactFlow.
+ * Features:
+ *  - Add referral modal with role check
+ *  - Coloring nodes based on slot status
+ *  - Proper refresh control after referral
+ *  - Preserve node drag and zoom smoothly
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -24,18 +25,21 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { CardContent } from "@/components/ui/card";
-import { getClientToken, getUserToken } from "../utils/tokenService";
 import { useAuth } from "@/context/AuthContext";
+import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { baseApiURL } from "@/utils/constants";
+import { ROLES } from "@/utils/roles";
+import { hasRole } from "@/utils/roleUtils";
 
 type Orientation = "vertical" | "horizontal";
 
 interface TreeGraphProps {
   data: any;
   orientation?: Orientation;
+  onHierarchyRefresh?: () => Promise<void>;
 }
 
-// 🔵 Color logic: green = full, yellow = 1 left, red = 2 left
+// 🔵 Node color logic
 const getNodeColor = (leftOver: number) => {
   if (leftOver === 0) return "#22c55e";
   if (leftOver === 1) return "#facc15";
@@ -43,7 +47,9 @@ const getNodeColor = (leftOver: number) => {
 };
 
 /**
- * Recursively builds nodes and edges with orientation-aware positioning.
+ * buildTreeLayout()
+ * -----------------
+ * Recursively builds nodes and edges.
  */
 const buildTreeLayout = (
   node: any,
@@ -80,28 +86,23 @@ const buildTreeLayout = (
       fontSize: "0.75rem",
       minWidth: 150,
     },
-    sourcePosition:
-      orientation === "vertical" ? Position.Bottom : Position.Right,
+    sourcePosition: orientation === "vertical" ? Position.Bottom : Position.Right,
     targetPosition: orientation === "vertical" ? Position.Top : Position.Left,
   };
 
   let allNodes: Node[] = [currentNode];
   let allEdges: Edge[] = [];
 
-  const childOffset = spacing;
-  const childDepth = depth + 1;
-
   node.children?.forEach((child: any, index: number) => {
     const offset = (index - (node.children.length - 1) / 2) * spacing;
-
-    const childX = orientation === "vertical" ? x + offset : x + childOffset;
-    const childY = orientation === "vertical" ? y + childOffset : y + offset;
+    const childX = orientation === "vertical" ? x + offset : x + spacing;
+    const childY = orientation === "vertical" ? y + spacing : y + offset;
 
     const [childNodes, childEdges] = buildTreeLayout(
       child,
       childX,
       childY,
-      childDepth,
+      depth + 1,
       spacing * 0.8,
       orientation
     );
@@ -123,30 +124,58 @@ const buildTreeLayout = (
 const TreeGraph: React.FC<TreeGraphProps> = ({
   data,
   orientation = "vertical",
+  onHierarchyRefresh,
 }) => {
-  const { memberId } = useAuth();
+  const { roles, isAuthReady } = useAuth();
+  const authFetch = useAuthFetch();
+
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
   const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [referralLevel, setReferralLevel] = useState("");
   const [newMemberId, setNewMemberId] = useState("");
 
-  // 🧠 Memoize layout generation for performance
-  const [builtNodes, builtEdges] = useMemo(() => {
-    return buildTreeLayout(data, 0, 0, 0, 200, orientation);
-  }, [data, orientation]);
+  const previousData = useRef<any>(null); // 🧠 Save last hierarchy data
 
+  /**
+   * useEffect: Update nodes and edges ONLY if incoming data changed.
+   */
   useEffect(() => {
-    setNodes(builtNodes);
-    setEdges(builtEdges);
-  }, [builtNodes, builtEdges]);
+    if (data && JSON.stringify(data) !== JSON.stringify(previousData.current)) {
+      // 🔥 Only rebuild layout if data changed
+      const [newNodes, newEdges] = buildTreeLayout(data, 0, 0, 0, 200, orientation);
+      setNodes(newNodes);
+      setEdges(newEdges);
+      previousData.current = data;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, orientation]); // Only re-run if data OR orientation changes
 
+  /**
+   * handleNodeClick()
+   * -----------------
+   * Opens Add Referral modal if eligible.
+   */
   const handleNodeClick = (_: any, node: Node) => {
+    if (!isAuthReady) {
+      alert("❗ Please wait, authentication still loading...");
+      return;
+    }
     if (node.data.leftOverChildrenPosition > 0) {
-      setSelectedNode(node);
+      if (hasRole(roles, ROLES.ADMIN_RW)) {
+        setSelectedNode(node);
+      } else {
+        alert("❌ You are not authorized to add referrals.");
+      }
     }
   };
 
+  /**
+   * handleSubmit()
+   * --------------
+   * Adds a new referral and triggers hierarchy refresh.
+   */
   const handleSubmit = async () => {
     if (!referralLevel.trim() || !newMemberId.trim()) {
       alert("❌ Please enter referral level and new member ID.");
@@ -154,40 +183,35 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
     }
 
     try {
-      const clientToken = await getClientToken();
-      const userToken = getUserToken();
-
-      const res = await fetch(`${baseApiURL}/addreferer`, {
+      const res = await authFetch(`${baseApiURL}/addreferer`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-          "Client-Authorization": `Bearer ${clientToken}`,
-        },
         body: JSON.stringify({
           referrerId: selectedNode?.id,
           referralLevel,
           memberId: newMemberId,
         }),
-      });
+      }, true);
 
       if (!res.ok) throw new Error("❌ Failed to add referer");
 
       alert("✅ Referral added successfully!");
-      window.location.reload();
+
+      setSelectedNode(null);
+      setReferralLevel("");
+      setNewMemberId("");
+
+      if (onHierarchyRefresh) {
+        await onHierarchyRefresh();
+      }
     } catch (err) {
       console.error("Add referer failed:", err);
       alert("❌ Something went wrong.");
     }
-
-    setSelectedNode(null);
-    setReferralLevel("");
-    setNewMemberId("");
   };
 
   return (
     <CardContent className="h-[600px] w-full relative">
-      {/* Tree Graph */}
+      {/* 🧩 Tree Graph */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -205,27 +229,16 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
 
       {/* 🟢 Legend */}
       <div className="absolute top-2 right-2 bg-white p-2 rounded shadow text-xs z-50">
-        <p>
-          <span className="inline-block w-3 h-3 bg-red-400 mr-2 rounded-full"></span>
-          2 slots open
-        </p>
-        <p>
-          <span className="inline-block w-3 h-3 bg-yellow-300 mr-2 rounded-full"></span>
-          1 slot open
-        </p>
-        <p>
-          <span className="inline-block w-3 h-3 bg-green-500 mr-2 rounded-full"></span>
-          Fully occupied
-        </p>
+        <p><span className="inline-block w-3 h-3 bg-red-400 mr-2 rounded-full"></span> 2 slots open</p>
+        <p><span className="inline-block w-3 h-3 bg-yellow-300 mr-2 rounded-full"></span> 1 slot open</p>
+        <p><span className="inline-block w-3 h-3 bg-green-500 mr-2 rounded-full"></span> Fully occupied</p>
       </div>
 
-      {/* 🟠 Modal for Add Referral */}
+      {/* 🟠 Add Referral Modal */}
       {selectedNode && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4">
-              Add Referral for {selectedNode.id}
-            </h2>
+            <h2 className="text-lg font-semibold mb-4">Add Referral for {selectedNode.id}</h2>
             <div className="space-y-4">
               <input
                 type="text"
