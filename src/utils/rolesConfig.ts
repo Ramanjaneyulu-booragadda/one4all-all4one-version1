@@ -9,10 +9,9 @@ export const roleBasedRoutes: Record<string, string[]> = {
   '/dashboard/my-account': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
   '/dashboard/receive-help': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
   '/dashboard/give-help': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
-  '/dashboard/total-members': [ROLES.ADMIN_RW, ROLES.ADMIN_RO],
+  '/dashboard/My-Team': [ROLES.ADMIN_RW, ROLES.ADMIN_RO],
   '/dashboard/change-password': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
   '/dashboard/give-help-history': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
   '/dashboard/receive-help-history': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
-  '/dashboard/recent-help': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
   '/dashboard/terms': [ ROLES.USER_RO,ROLES.ADMIN_RW,],
 };

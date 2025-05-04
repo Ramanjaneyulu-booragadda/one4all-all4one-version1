@@ -479,3 +479,5 @@ export const registrationUrl = `${baseApiURL}/register`;
 export const adminRegistrationUrl = `${baseApiURL}/admin/register`;
 export const ONE4ALL_USER_RO = "ONE4ALL_USER_RO";
 export const ONE4ALL_ADMIN_RW = "ONE4ALL_ADMIN_RW";
+export const defaultRoute= "/dashboard/my-account";
+export const profileUrl= `${baseApiURL}/member/profile`;

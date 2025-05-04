@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthFetch } from "../../hooks/useAuthFetch";
 import { useAuth } from "../../context/AuthContext";
-import { loginUrl } from "../../utils/constants";
+import { loginUrl ,defaultRoute} from "../../utils/constants";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
@@ -74,8 +74,8 @@ export default function LoginPage() {
         );
         // console.log("✅ Login successful:", result);
         // Determine the default route based on roles
-        const isAdmin = extractedRoles.some((role: any) => [ROLES.ADMIN_RW,ROLES.ADMIN_RO].includes(role));
-        const defaultRoute = isAdmin ? "/dashboard" : "/dashboard/give-help";
+        //const isAdmin = extractedRoles.some((role: any) => [ROLES.ADMIN_RW,ROLES.ADMIN_RO].includes(role));
+        //const defaultRoute = isAdmin ? "/dashboard/my-account" : "/dashboard/my-account";
 
         // Navigate to the appropriate route
         toast.success("Login successful! Redirecting...", { theme: "colored" });

@@ -19,7 +19,7 @@ import { Download, Search } from "lucide-react";
 import { baseApiURL } from "@/utils/constants";
 import { ROLES } from "@/utils/roles";
 
-export default function TotalMembersPage() {
+export default function MyTeamsPage() {
   const { memberId, isAuthReady, roles, logout } = useAuth();
   const router = useRouter();
   const authFetch = useAuthFetch();
@@ -42,7 +42,7 @@ export default function TotalMembersPage() {
     } catch (err) {
       console.error("❌ Failed to fetch hierarchy:", err);
     }
-  }, [authFetch, memberId]);
+  }, [memberId]);
 
   /**
    * Check user authorization.
@@ -117,7 +117,7 @@ export default function TotalMembersPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Total Members Hierarchy</h1>
+        <h1 className="text-2xl font-bold">My Team Hierarchy</h1>
         <Button variant="outline" size="sm">
           <Download className="mr-2 h-4 w-4" /> Export
         </Button>
