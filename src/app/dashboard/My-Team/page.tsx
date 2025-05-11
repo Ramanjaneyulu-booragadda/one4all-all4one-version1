@@ -150,46 +150,7 @@ export default function MyTeamsPage() {
 
       {/* Tree Graph */}
       <Card>
-        <CardHeader>
-          {/* Search and Filters */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            <div className="relative w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-9 h-9 rounded-md border bg-background px-3 py-1 text-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            <select
-              className="border h-9 rounded px-3 text-sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-            >
-              <option value="all">All</option>
-              <option value="complete">Complete</option>
-              <option value="partial">Partial</option>
-              <option value="not-filled">Not Filled</option>
-            </select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setOrientation((prev) =>
-                  prev === "vertical" ? "horizontal" : "vertical"
-                )
-              }
-            >
-              {orientation === "vertical" ? "🔁 Horizontal" : "↕️ Vertical"}
-            </Button>
-          </div>
-        </CardHeader>
-
-        <CardContent>
+        <CardContent style={{ backgroundColor: "#F7F9FB" }}>
           {hierarchyData ? (
             // <TreeGraph
             //   data={filteredTree}
