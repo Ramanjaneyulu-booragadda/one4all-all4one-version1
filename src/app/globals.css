@@ -347,3 +347,10 @@ import '@fontsource/roboto/700.css';
   margin-bottom: 3px;
   display: inline-block;
 }
+
+.highlighted-node {
+  transition: all 0.3s ease;
+  transform: scale(1.1);
+  box-shadow: 0 0 15px 4px rgba(255, 204, 0, 0.8);
+  z-index: 100;
+}

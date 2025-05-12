@@ -22,7 +22,10 @@ import {
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
+import { Expand, Shrink, MoveVertical, MoveHorizontal } from "lucide-react";
 // import { datahardcoded, getData } from "./utils.js";
+
+import NodeSearchFocus from "./search";
 
 const elk = new ELK();
 
@@ -75,13 +78,14 @@ function LayoutFlow({ initialNodes, initialEdges }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { fitView } = useReactFlow();
-
+  const [direction, setDirection] = useState("DOWN");
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     []
   );
   const onLayout = useCallback(
     ({ direction, useInitialNodes = false }) => {
+      setDirection(direction);
       const opts = { "elk.direction": direction, ...elkOptions };
       const ns = useInitialNodes ? initialNodes : nodes;
       const es = useInitialNodes ? initialEdges : edges;
@@ -125,29 +129,35 @@ function LayoutFlow({ initialNodes, initialEdges }) {
         style={{ backgroundColor: "#F7F9FB", width: "100%" }}
       >
         <Panel position="top-right">
-          <button
-            className=" text-blue-500  z-10 bg-white border border-blue-500 rounded-md p-2 m-2"
-            onClick={toggleFullScreen}
-          >
-            Full Screen
-          </button>
-          <button
-            className=" text-blue-500  z-10 bg-white border border-blue-500 rounded-md p-2 m-2"
-            onClick={() => onLayout({ direction: "DOWN" })}
-          >
-            vertical layout
-          </button>
-
-          <button
-            className=" text-blue-500  z-10 bg-white border border-blue-500 rounded-md p-2 m-2"
-            onClick={() => onLayout({ direction: "RIGHT" })}
-          >
-            horizontal layout
-          </button>
+          <div className="flex relative top-[0px]">
+            <button
+              className=" text-blue-500  z-10 bg-white border border-blue-500 rounded-md p-2 m-2"
+              onClick={toggleFullScreen}
+            >
+              {isFullscreen ? (
+                <Shrink className="h-4 w-4" />
+              ) : (
+                <Expand className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              className=" text-blue-500  z-10 bg-white border border-blue-500 rounded-md p-2 m-2"
+              onClick={() =>
+                onLayout({ direction: direction === "DOWN" ? "RIGHT" : "DOWN" })
+              }
+            >
+              {direction !== "DOWN" ? (
+                <MoveVertical className="h-4 w-4" />
+              ) : (
+                <MoveHorizontal className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </Panel>
         <Background />
         <MiniMap nodeStrokeWidth={3} pannable={true} zoomable={true} />
         <Controls />
+        <NodeSearchFocus />
       </ReactFlow>
     </div>
   );

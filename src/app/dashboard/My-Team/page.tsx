@@ -143,9 +143,9 @@ export default function MyTeamsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Team Hierarchy</h1>
-        <Button variant="outline" size="sm">
+        {/* <Button variant="outline" size="sm">
           <Download className="mr-2 h-4 w-4" /> Export
-        </Button>
+        </Button> */}
       </div>
 
       {/* Tree Graph */}
