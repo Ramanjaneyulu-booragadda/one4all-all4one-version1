@@ -13,12 +13,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthFetch } from "../../hooks/useAuthFetch";
 import { useAuth } from "../../context/AuthContext";
-import { loginUrl ,defaultRoute} from "../../utils/constants";
+import { loginUrl, defaultRoute } from "../../utils/constants";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
 import { useTheme } from "@/context/ThemeContext";
-import { ROLES } from "@/utils/roles";
 export default function LoginPage() {
   const { theme } = useTheme(); // To get the current theme
   const router = useRouter();
@@ -62,9 +61,11 @@ export default function LoginPage() {
         }
 
         const result = await response.json();
-        
+
         const memberData = result.message[0].member[0];
-        const extractedRoles = (memberData.roles || []).map((roleObj: any) => roleObj.roleName);
+        const extractedRoles = (memberData.roles || []).map(
+          (roleObj: any) => roleObj.roleName
+        );
         // (Optional) Save token if needed
         // localStorage.setItem("token", result.token);
         login(
@@ -104,7 +105,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col justify-center items-center bg-gray-100 dark:bg-gray-700">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md"></div>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-right">
+        <Link
+          href="admin/login"
+          className="block p-2 rounded hover:text-blue-500"
+        >
+          Go to Admin Login
+        </Link>
+      </div>
 
       <div className=" bg-white dark:bg-transparent dark:border-2 dark:border-[#cdc9e4] mt-6 sm:mx-auto sm:w-full sm:max-w-md shadow sm:rounded-lg sm:px-8 lg:px-8">
         <div

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Menu, User, LogOut } from "lucide-react";
+import { Bell, Menu, User, LogOut, UserRound } from "lucide-react";
 
 export function TopBar() {
   const router = useRouter();
@@ -65,11 +65,7 @@ export function TopBar() {
                 variant="ghost"
                 className="relative h-10 w-10 rounded-full"
               >
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-blue-800 text-white">
-                    JD
-                  </AvatarFallback>
-                </Avatar>
+                <UserRound size={24} />
               </Button>
             </DropdownMenuTrigger>
 

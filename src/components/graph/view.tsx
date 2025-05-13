@@ -26,6 +26,7 @@ import { Expand, Shrink, MoveVertical, MoveHorizontal } from "lucide-react";
 // import { datahardcoded, getData } from "./utils.js";
 
 import NodeSearchFocus from "./search";
+import AddUser from "./addUser";
 
 const elk = new ELK();
 
@@ -116,6 +117,14 @@ function LayoutFlow({ initialNodes, initialEdges }) {
     }
     setIsFullscreen(!isFullscreen);
   }, [isFullscreen]);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const handleNodeClick = (event, node) => {
+    if (node.data.noOfChilds < 2) {
+      setSelectedNode(node);
+    } else {
+      setSelectedNode(null);
+    }
+  };
 
   return (
     <div ref={elementRef} className="relative w-[100%] h-[100vh]">
@@ -125,6 +134,7 @@ function LayoutFlow({ initialNodes, initialEdges }) {
         onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={handleNodeClick}
         fitView
         style={{ backgroundColor: "#F7F9FB", width: "100%" }}
       >
@@ -159,6 +169,12 @@ function LayoutFlow({ initialNodes, initialEdges }) {
         <Controls />
         <NodeSearchFocus />
       </ReactFlow>
+      {selectedNode && (
+        <AddUser
+          selectedNode={selectedNode}
+          setSelectedNode={setSelectedNode}
+        />
+      )}
     </div>
   );
 }
@@ -176,7 +192,6 @@ export default function MainFlow({ data }) {
     // console.log(getData(datahardcoded, null, null));
     resetGraph();
     const { nodes, edges } = getData(data, null, null);
-    console.log(nodes, edges);
     setNodes(nodes);
     setEdges(edges);
   }, []);
