@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuth } from '@/context/AuthContext';
-import { roleBasedRoutes } from '@/utils/rolesConfig';
-import Link from 'next/link';
+import { useAuth } from "@/context/AuthContext";
+import { roleBasedRoutes } from "@/utils/rolesConfig";
+import Link from "next/link";
 
 export function Sidebar() {
   const { getRoles, isAuthReady } = useAuth();
@@ -16,10 +16,9 @@ export function Sidebar() {
   const userRoles = getRoles?.() ?? [];
 
   // Filter routes based on user roles
-  const accessibleRoutes = Object.entries(roleBasedRoutes).filter(([, allowedRoles]) =>
-    allowedRoles.some((role) => userRoles.includes(role))
+  const accessibleRoutes = Object.entries(roleBasedRoutes).filter(
+    ([, allowedRoles]) => allowedRoles.some((role) => userRoles.includes(role))
   );
-
   return (
     <aside className="w-64 bg-gray-800 text-white h-full">
       <nav className="p-4">
@@ -27,7 +26,7 @@ export function Sidebar() {
           {accessibleRoutes.map(([path]) => (
             <li key={path}>
               <Link href={path} className="block p-2 rounded hover:bg-gray-700">
-                {path.replace('/dashboard/', '').replace(/-/g, ' ').toUpperCase()}
+                {path.replace("/dashboard/", "").toUpperCase().replace("/", "")}
               </Link>
             </li>
           ))}

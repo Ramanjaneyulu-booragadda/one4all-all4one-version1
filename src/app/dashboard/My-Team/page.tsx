@@ -9,7 +9,8 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import TreeGraph from "@/components/TreeGraph";
+// import TreeGraph from "@/components/TreeGraph";
+import Flow from "@/components/graph/view";
 import { useAuth } from "@/context/AuthContext";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { hasAnyRole } from "@/utils/roleUtils";
@@ -25,9 +26,13 @@ export default function MyTeamsPage() {
   const authFetch = useAuthFetch();
 
   const [hierarchyData, setHierarchyData] = useState<any | null>(null);
-  const [orientation, setOrientation] = useState<"vertical" | "horizontal">("vertical");
+  const [orientation, setOrientation] = useState<"vertical" | "horizontal">(
+    "vertical"
+  );
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "complete" | "partial" | "not-filled">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "complete" | "partial" | "not-filled"
+  >("all");
   const [showUnauthorizedModal, setShowUnauthorizedModal] = useState(false);
 
   /**
@@ -36,7 +41,11 @@ export default function MyTeamsPage() {
   const fetchHierarchy = useCallback(async () => {
     if (!memberId) return;
     try {
-      const res = await authFetch(`${baseApiURL}/${memberId}/downlinerHierarchy`, {}, true);
+      const res = await authFetch(
+        `${baseApiURL}/${memberId}/downlinerHierarchy`,
+        {},
+        true
+      );
       const data = await res.json();
       setHierarchyData(data);
     } catch (err) {
@@ -48,7 +57,7 @@ export default function MyTeamsPage() {
    * Check user authorization.
    */
   useEffect(() => {
-    if (isAuthReady && (!hasAnyRole(roles, [ROLES.ADMIN_RW, ROLES.USER_RO]))) {
+    if (isAuthReady && !hasAnyRole(roles, [ROLES.ADMIN_RW, ROLES.USER_RO])) {
       setShowUnauthorizedModal(true);
     }
   }, [isAuthReady, roles]);
@@ -75,19 +84,28 @@ export default function MyTeamsPage() {
    */
   const filterHierarchy = (node: any): any | null => {
     const matchesSearch =
-      (node.memberId?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (node.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+      node.memberId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      false ||
+      node.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      false;
 
     const status =
-      node.leftOverChildrenPosition === 0 ? "complete" :
-      node.leftOverChildrenPosition === 2 ? "not-filled" :
-      "partial";
+      node.leftOverChildrenPosition === 0
+        ? "complete"
+        : node.leftOverChildrenPosition === 2
+        ? "not-filled"
+        : "partial";
 
     const matchesStatus = statusFilter === "all" || statusFilter === status;
 
-    const filteredChildren = node.children?.map(filterHierarchy).filter((child: any) => child !== null);
+    const filteredChildren = node.children
+      ?.map(filterHierarchy)
+      .filter((child: any) => child !== null);
 
-    if (matchesSearch && matchesStatus || (filteredChildren && filteredChildren.length > 0)) {
+    if (
+      (matchesSearch && matchesStatus) ||
+      (filteredChildren && filteredChildren.length > 0)
+    ) {
       return { ...node, children: filteredChildren || [] };
     }
 
@@ -108,8 +126,15 @@ export default function MyTeamsPage() {
             <h2 className="text-lg font-semibold mb-4">Unauthorized Access</h2>
             <p className="mb-4">You are not authorized to view this page.</p>
             <div className="flex justify-center space-x-4">
-              <Button variant="destructive" onClick={handleLogout}>Yes, Logout</Button>
-              <Button variant="outline" onClick={() => setShowUnauthorizedModal(false)}>No, Stay</Button>
+              <Button variant="destructive" onClick={handleLogout}>
+                Yes, Logout
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowUnauthorizedModal(false)}
+              >
+                No, Stay
+              </Button>
             </div>
           </div>
         </div>
@@ -118,57 +143,21 @@ export default function MyTeamsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Team Hierarchy</h1>
-        <Button variant="outline" size="sm">
+        {/* <Button variant="outline" size="sm">
           <Download className="mr-2 h-4 w-4" /> Export
-        </Button>
+        </Button> */}
       </div>
 
       {/* Tree Graph */}
       <Card>
-        <CardHeader>
-          {/* Search and Filters */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            <div className="relative w-full sm:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-9 h-9 rounded-md border bg-background px-3 py-1 text-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            <select
-              className="border h-9 rounded px-3 text-sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-            >
-              <option value="all">All</option>
-              <option value="complete">Complete</option>
-              <option value="partial">Partial</option>
-              <option value="not-filled">Not Filled</option>
-            </select>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setOrientation(prev => prev === "vertical" ? "horizontal" : "vertical")
-              }
-            >
-              {orientation === "vertical" ? "🔁 Horizontal" : "↕️ Vertical"}
-            </Button>
-          </div>
-        </CardHeader>
-
-        <CardContent>
+        <CardContent style={{ backgroundColor: "#F7F9FB" }}>
           {hierarchyData ? (
-            <TreeGraph
-              data={filteredTree}
-              orientation={orientation}
-              onHierarchyRefresh={fetchHierarchy}
-            />
+            // <TreeGraph
+            //   data={filteredTree}
+            //   orientation={orientation}
+            //   onHierarchyRefresh={fetchHierarchy}
+            // />
+            <Flow data={hierarchyData} />
           ) : (
             <p className="text-gray-500 text-sm">
               Loading hierarchy or no matching results...

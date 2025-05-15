@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-screen flex flex-row h-[100vh]">
       <Sidebar />
       <div className="flex-1 flex flex-col bg-gray-100 dark:bg-gray-600">
         <TopBar />
