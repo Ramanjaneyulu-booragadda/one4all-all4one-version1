@@ -290,8 +290,8 @@ export const datahardcoded = {
 };
 const colors = {
   admin: "yellow",
-  full: "red",
-  hasGap: "green",
+  full: "green",
+  hasGap: "red",
 };
 const position = { x: 0, y: 0 };
 const edgeType = "smoothstep";

@@ -27,6 +27,7 @@ interface ReceivedHelp {
   proofDoc?: string;
   transactionId: string;
   verifiedBy?: string;
+  receivedFromName?: string; // <-- Add this field
 }
 
 export default function ReceiveHelpPage() {
@@ -55,50 +56,51 @@ export default function ReceiveHelpPage() {
   const [currentHelpStatus, setCurrentHelpStatus] = useState("Not Active");
 
   // 🔄 Fetch receive help data
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await authFetch(
+        `http://localhost:9090/api/help/receive-help/${memberId}`,
+        { method: "GET" },
+        true
+      );
+      const json = await response.json();
+
+      const detailList = json?.message?.[0]?.data?.records || [];
+      const summary = json?.message?.[0]?.data?.summary || {};
+
+      setHelpList(
+        detailList.map((item: any) => ({
+          id: item.paymentID,
+          transactionId: item.transactionId,
+          receivedFrom: item.receivedFrom,
+          receivedFromName: item.receivedFromName, // <-- Map from backend
+          receivedAmount: `₹${item.receivedAmount}`,
+          requestReceivedAt: item.requestReceivedAt?.split("T")[0],
+          requestModifiedAt: item.requestModifiedAt?.split("T")[0],
+          status: item.status,
+          proofDoc: item.proofDoc,
+          verifiedBy: item.memberId, // ✅ Add this
+        }))
+      );
+
+      setSummaryStats({
+        totalReceived: summary.totalReceivedAmount || 0,
+        thisMonth: summary.thisMonthReceivedAmount || 0,
+        approved: summary.approvedRequestCount || 0,
+        rejected: summary.rejectedRequestCount || 0,
+        totalRequestCount: summary.totalRequestCount || 0,
+      });
+    } catch (err) {
+      console.error("Error fetching receive help data:", err);
+      setError("Unable to load receive help details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await authFetch(
-          `http://localhost:9090/api/help/receive-help/${memberId}`,
-          { method: "GET" },
-          true
-        );
-        const json = await response.json();
-
-        const detailList = json?.message?.[0]?.data?.records || [];
-        const summary = json?.message?.[0]?.data?.summary || {};
-
-        setHelpList(
-          detailList.map((item: any) => ({
-            id: item.paymentID,
-            transactionId: item.transactionId,
-            receivedFrom: item.receivedFrom,
-            receivedAmount: `₹${item.receivedAmount}`,
-            requestReceivedAt: item.requestReceivedAt?.split("T")[0],
-            requestModifiedAt: item.requestModifiedAt?.split("T")[0],
-            status: item.status,
-            proofDoc: item.proofDoc,
-            verifiedBy: item.memberId, // ✅ Add this
-          }))
-        );
-
-        setSummaryStats({
-          totalReceived: summary.totalReceivedAmount || 0,
-          thisMonth: summary.thisMonthReceivedAmount || 0,
-          approved: summary.approvedRequestCount || 0,
-          rejected: summary.rejectedRequestCount || 0,
-          totalRequestCount: summary.totalRequestCount || 0,
-        });
-      } catch (err) {
-        console.error("Error fetching receive help data:", err);
-        setError("Unable to load receive help details.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (memberId) fetchData();
   }, [memberId]);
 
@@ -173,6 +175,8 @@ export default function ReceiveHelpPage() {
 
       setModalOpen(false);
       setComments("");
+      // 🔄 Auto-refresh Help Statistics and Received Help Details
+      if (memberId) fetchData();
     } catch (err) {
       setErrorPopup("Verification failed. Try again later.");
       console.error("Verification submit error:", err);
@@ -298,13 +302,14 @@ export default function ReceiveHelpPage() {
                 <thead className="[&_tr]:border-b">
                   <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                     <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">Received From ID</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Received From</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Received Amount</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Transaction ID</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Request Received At</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Request Modified At</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">status Modified By</th>
-                    <th className="h-12 px-4 text-left align-middle font-medium">proof of Documents</th>
+                    <th className="h-12 px-4 text-left align-middle font-medium">proof</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Request Status</th>
                     <th className="h-12 px-4 text-left align-middle font-medium">Action</th>
                   </tr>
@@ -314,17 +319,14 @@ export default function ReceiveHelpPage() {
                     <tr key={item.id}>
                       <td className="px-4 py-2">{item.id}</td>
                       <td className="px-4 py-2">{item.receivedFrom}</td>
+                      <td className="px-4 py-2">{item.receivedFromName}</td>
                       <td className="px-4 py-2">{item.receivedAmount}</td>
                       <td className="px-4 py-2">{item.transactionId}</td>
                       <td className="px-4 py-2">{item.requestReceivedAt}</td>
                       <td className="px-4 py-2">{item.requestModifiedAt}</td>
                       <td className="px-4 py-2">{item.verifiedBy}</td>
                       <td className="px-4 py-2">
-                        {item.proofDoc ? (
-                          <a href={item.proofDoc} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
-                        )}
+                        {item.proofDoc }
                       </td>
                       <td className="px-4 py-2">
                         <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${

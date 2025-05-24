@@ -30,7 +30,7 @@ type HelpRequest = {
   levelAmount: number;
   uplinerMobileNo: string;
   status?: "UNPAID" | "SUBMITTED" | "SENT" | "RECEIVED";
-  proofUrl?: string;
+  proof?: string;
   transactionReferenceId?: string;
 };
 type HelpStats = {
@@ -48,7 +48,7 @@ export default function GiveHelpPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<HelpRequest | null>(null);
   const [senderId, setSenderId] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [utrNumber, setUtrNumber] = useState(""); // New state for UTR number
   const [popupData, setPopupData] = useState<{
     receiverId: string;
     transactionReferenceId: string;
@@ -58,47 +58,50 @@ export default function GiveHelpPage() {
   const authFetch = useAuthFetch();
   const { memberId } = useAuth();
   const [stats, setStats] = useState<HelpStats | null>(null);
-  useEffect(() => {
+
+  // Move fetchStats outside useEffect so it can be reused
+  const fetchStats = async () => {
     if (!memberId) return;
-    const fetchStats = async () => {
-      try {
-        const res = await authFetch(
-          `http://localhost:9090/api/dashboard/summary/${memberId}`,
-          { method: "GET" },
-          true
-        );
-        const data = await res.json();
-        setStats(data.message[0].data); // assuming backend returns a single record
-      } catch (error) {
-        console.error("Failed to load stats:", error);
-      }
-    };
+    try {
+      const res = await authFetch(
+        `http://localhost:9090/api/dashboard/summary/${memberId}`,
+        { method: "GET" },
+        true
+      );
+      const data = await res.json();
+      setStats(data.message[0].data); // assuming backend returns a single record
+    } catch (error) {
+      console.error("Failed to load stats:", error);
+    }
+  };
+
+  // Move fetchHelpRequests outside useEffect so it can be reused
+  const fetchHelpRequests = async () => {
+    if (!memberId) return;
+    try {
+      const response = await authFetch(
+        `http://localhost:9090/api/${memberId}/upliners`,
+        { method: "GET" },
+        true
+      );
+      const data: HelpRequest[] = await response.json();
+      const normalizeHelpRequest = (req: any): HelpRequest => ({
+        ...req,
+        status: req.status || "UNPAID"
+      });
+      const initialized = data.map(normalizeHelpRequest);
+      setHelpRequests(initialized);
+    } catch (err) {
+      console.error("Error fetching help requests:", err);
+      setErrorPopup("Failed to load help requests. Try again later.");
+    }
+  };
+
+  useEffect(() => {
     fetchStats();
   }, [memberId]);
 
   useEffect(() => {
-    if (!memberId) return;
-    const fetchHelpRequests = async () => {
-      try {
-        const response = await authFetch(
-          `http://localhost:9090/api/${memberId}/upliners`,
-          { method: "GET" },
-          true
-        );
-        const data: HelpRequest[] = await response.json();
-        const normalizeHelpRequest = (req: any): HelpRequest => ({
-          ...req,
-          status: req.status || "UNPAID"
-        });
-        
-        const initialized = data.map(normalizeHelpRequest);
-        
-        setHelpRequests(initialized);
-      } catch (err) {
-        console.error("Error fetching help requests:", err);
-        setErrorPopup("Failed to load help requests. Try again later.");
-      }
-    };
     fetchHelpRequests();
   }, [memberId]);
 
@@ -115,32 +118,32 @@ export default function GiveHelpPage() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedRequest || !file) return;
+    if (!selectedRequest || !utrNumber.trim()) return;
 
-    // Validation: Check if the helping amount exceeds the available balance
     if (stats && selectedRequest.levelAmount > stats.availableBalance) {
       setErrorPopup("The helping amount exceeds your available balance. Please adjust the amount.");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("ofaMemberId", senderId);
-    formData.append("receiverMemberId", selectedRequest.uplinerMemberId);
-    formData.append("receiverMobile", selectedRequest.uplinerMobileNo);
-    formData.append("amount", String(selectedRequest.levelAmount)); // ✅ backend expects this
-    formData.append("uplinerLevel", String(selectedRequest.uplinerLevel));
-    formData.append("proofUrl", file); // ✅ file field stays same
+    const body = JSON.stringify({
+      ofaMemberId: senderId,
+      receiverMemberId: selectedRequest.uplinerMemberId,
+      receiverMobile: selectedRequest.uplinerMobileNo,
+      amount: String(selectedRequest.levelAmount),
+      uplinerLevel: String(selectedRequest.uplinerLevel),
+      proof: utrNumber,
+    });
 
     try {
       const response = await authFetch("http://localhost:9090/api/help/give", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body,
       }, true);
 
       const json = await response.json();
 
       if (!response.ok) {
-        // 🔴 Extract backend error if available
         const backendMessage =
           json?.messageText ||
           json?.errorDetails?.description ||
@@ -156,6 +159,9 @@ export default function GiveHelpPage() {
           transactionReferenceId: record.submissionReferenceId,
           paymentStatus: record.submissionStatus,
         });
+        // Fetch updated stats and help requests after successful help submission
+        fetchStats();
+        fetchHelpRequests();
       } else {
         setErrorPopup("No transaction reference ID returned. Upload may have failed.");
       }
@@ -274,11 +280,8 @@ export default function GiveHelpPage() {
                         {req.status === "RECEIVED" ? "PAID" : req.status}
                       </td>
                       <td className="px-4 py-2">
-                        {req.proofUrl ? (
-                          <a href={req.proofUrl} target="_blank" className="text-blue-600 hover:underline text-sm">Download</a>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">N/A</span>
-                        )}
+                            {req.proof}
+                        
                       </td>
                       <td className="px-4 py-2">
                       <Button
@@ -316,9 +319,14 @@ export default function GiveHelpPage() {
               <Input disabled value={selectedRequest.uplinerMobileNo} />
               <Input disabled value={selectedRequest.levelAmount} />
               <Input value={senderId} onChange={(e) => setSenderId(e.target.value)} />
-              <Input type="file" accept=".pdf,image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+              <Input
+                placeholder="Enter UTR Number (mandatory)"
+                value={utrNumber}
+                onChange={(e) => setUtrNumber(e.target.value)}
+                required
+              />
               <div className="flex justify-end">
-                <Button onClick={handleSubmit} disabled={!file || !senderId}>Submit Help</Button>
+                <Button onClick={handleSubmit} disabled={!utrNumber.trim() || !senderId}>Submit Help</Button>
               </div>
             </div>
           )}
