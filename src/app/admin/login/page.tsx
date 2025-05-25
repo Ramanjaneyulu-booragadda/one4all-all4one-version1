@@ -20,6 +20,8 @@ import { ROLES } from "@/utils/roles";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useAuth } from "@/context/AuthContext";
 import { adminLoginUrl } from "@/utils/constants";
+import { logError } from "@/utils/logError";
+
 export default function LoginPage() {
   const { theme } = useTheme(); // To get the current theme
   const router = useRouter();
@@ -41,7 +43,7 @@ export default function LoginPage() {
     setError(null); // clear previous errors
     if (formData.ofaMemberId !== "" || formData.password !== "") {
       try {
-        // 🔐 Use authFetch to include client token in headers
+        //  Use authFetch to include client token in headers
         const response = await authFetch(
           adminLoginUrl,
           {
@@ -51,7 +53,7 @@ export default function LoginPage() {
               Accept: "application/json",
             },
             body: JSON.stringify({
-              ofaMemberId: formData.ofaMemberId, // ✅ direct mapping
+              ofaMemberId: formData.ofaMemberId, //  direct mapping
               ofaPassword: formData.password,
             }),
           },
@@ -71,9 +73,9 @@ export default function LoginPage() {
         login(
           result.message[0].token,
           memberData.ofaMemberId,
-          extractedRoles // ✅ Array of role names like ["ONE4ALL_USER_RO", "ONE4ALL_ADMIN_RW"]
+          extractedRoles //  Array of role names like ["ONE4ALL_USER_RO", "ONE4ALL_ADMIN_RW"]
         );
-        // console.log("✅ Login successful:", result);
+        // console.log("\u2705 Login successful:", result);
         // Determine the default route based on roles
         const isAdmin = extractedRoles.some((role: any) => [ROLES.ADMIN_RW,ROLES.ADMIN_RO].includes(role));
         const defaultRoute = isAdmin ? "/dashboard" : "/dashboard/give-help";
@@ -82,7 +84,7 @@ export default function LoginPage() {
         toast.success("Admin Login successful! Redirecting...", { theme: "colored" });
         router.push(defaultRoute);
       } catch (error) {
-        console.error("❌ Login failed:", error);
+        logError(error, "[AdminLoginPage] handleSubmit failed");
         setError("Please check your credentials and try again.");
         toast.error(
           "Admin Login failed. Please check your credentials and try again.",
@@ -94,12 +96,9 @@ export default function LoginPage() {
         );
       }
     } else {
-      // toast.error("Please fill in all fields.", { theme: "colored" });
-      // console.log("❌ Please fill in all fields.");
       toast.warning("Please enter MemberId and password.", {
         theme: "colored",
       });
-      // setError("Please enter MemberId and password.");
     }
   };
 

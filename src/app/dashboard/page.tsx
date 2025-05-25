@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import TotalMembersPage from "./My-Team/page";
+import { logError } from "@/utils/logError";
 
 export default function DashboardPage() {
   const authFetch = useAuthFetch();
@@ -46,7 +47,7 @@ export default function DashboardPage() {
         const data = await res.json();
         setGiveHelpStats(data.message[0].data);
       } catch (error) {
-        console.error("Failed to load give help stats:", error);
+        logError(error, "[DashboardPage] fetchGiveHelpStats failed");
       }
     };
 
@@ -60,7 +61,7 @@ export default function DashboardPage() {
         const data = await res.json();
         setReceiveHelpStats(data.message[0].data.summary);
       } catch (error) {
-        console.error("Failed to load receive help stats:", error);
+        logError(error, "[DashboardPage] fetchReceiveHelpStats failed");
       }
     };
 
@@ -195,7 +196,7 @@ function GiveHelpSection() {
         );
         setGiveHelpData(filteredData);
       } catch (error) {
-        console.error("Error fetching give help data:", error);
+        logError(error, "[DashboardPage] GiveHelpSection fetchGiveHelpData failed");
       }
     };
 
@@ -279,7 +280,7 @@ function ReceiveHelpSection() {
         const records = data.message[0].data.records;
         setReceiveHelpData(records);
       } catch (error) {
-        console.error("Error fetching receive help data:", error);
+        logError(error, "[DashboardPage] ReceiveHelpSection fetchReceiveHelpData failed");
       }
     };
 

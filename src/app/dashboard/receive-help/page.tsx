@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner"; // ✅ Using 'sonner' or your toast lib
+import { logError } from "@/utils/logError";
 
 interface ReceivedHelp {
   id: string;
@@ -93,7 +94,7 @@ export default function ReceiveHelpPage() {
         totalRequestCount: summary.totalRequestCount || 0,
       });
     } catch (err) {
-      console.error("Error fetching receive help data:", err);
+      logError(err, "[ReceiveHelpPage] fetchData failed");
       setError("Unable to load receive help details.");
     } finally {
       setLoading(false);
@@ -179,7 +180,7 @@ export default function ReceiveHelpPage() {
       if (memberId) fetchData();
     } catch (err) {
       setErrorPopup("Verification failed. Try again later.");
-      console.error("Verification submit error:", err);
+      logError(err, "[ReceiveHelpPage] handleSubmit failed");
     }
   };
 

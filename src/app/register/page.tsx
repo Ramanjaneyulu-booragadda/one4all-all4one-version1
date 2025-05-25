@@ -21,6 +21,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
+import { logError } from "../../utils/logError";
 
 // Constants/utilities (make sure these exist or replace with mock data)
 import {
@@ -108,7 +109,7 @@ export default function RegisterPage() {
         {
           method: "POST",
           headers: {
-            roles: role, // 👈 This is your custom header
+            roles: role, //  This is your custom header
           },
           body: JSON.stringify({
             ofaFullName: data.fullName,
@@ -147,15 +148,15 @@ export default function RegisterPage() {
         emailid: registrationDetails.emailid,
         MemberID: registrationDetails.MemberID,
         Mobile: registrationDetails.Mobile,
-      }); // ✅ Save data
+      }); //  Save data
       setToastType("success");
-      setToastMessage("🎉 User Registration successful!");
+      setToastMessage("\ud83c\udf89 User Registration successful!");
       setShowSuccess(true);
     } catch (error) {
-      console.error("Registration failed:", error);
+      logError(error, "[RegisterPage] submitRegistration failed");
       setToastType("error");
       setToastMessage(
-        "⚠️ Registration failed. Please check the form and try again."
+        "\u26a0\ufe0f Registration failed. Please check the form and try again."
       );
       setShowError(true);
     }

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Toast } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { profileUrl } from "@/utils/constants";
+import { logError } from "@/utils/logError";
 
 export default function MyAccountPage() {
   const authFetch = useAuthFetch();
@@ -27,7 +28,6 @@ export default function MyAccountPage() {
   useEffect(() => {
     const fetchAccountDetails = async () => {
       try {
-        
         const response = await authFetch(
           `${profileUrl}/${memberId}`,
           { method: "GET" },
@@ -49,7 +49,7 @@ export default function MyAccountPage() {
           });
         }
       } catch (error) {
-        console.error("Failed to fetch account details", error);
+        logError(error, "[MyAccountPage] fetchAccountDetails failed");
       }
     };
 
@@ -74,7 +74,7 @@ export default function MyAccountPage() {
       setToastType("success");
       setToastMessage(statusMessage || "Profile updated successfully");
     } catch (error) {
-      console.error("Failed to update profile", error);
+      logError(error, "[MyAccountPage] handleUpdate failed");
       setToastType("error");
       setToastMessage("Failed to update profile");
     } finally {

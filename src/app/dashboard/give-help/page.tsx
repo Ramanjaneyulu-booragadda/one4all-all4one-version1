@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { logError } from "@/utils/logError";
 
 // ----------------------------------------------------------------------------------
 // Type for Help Requests
@@ -71,7 +72,7 @@ export default function GiveHelpPage() {
       const data = await res.json();
       setStats(data.message[0].data); // assuming backend returns a single record
     } catch (error) {
-      console.error("Failed to load stats:", error);
+      logError(error, "[GiveHelpPage] fetchStats failed");
     }
   };
 
@@ -92,7 +93,7 @@ export default function GiveHelpPage() {
       const initialized = data.map(normalizeHelpRequest);
       setHelpRequests(initialized);
     } catch (err) {
-      console.error("Error fetching help requests:", err);
+      logError(err, "[GiveHelpPage] fetchHelpRequests failed");
       setErrorPopup("Failed to load help requests. Try again later.");
     }
   };
@@ -167,7 +168,7 @@ export default function GiveHelpPage() {
       }
 
     } catch (error) {
-      console.error("Unexpected error submitting help:", error);
+      logError(error, "[GiveHelpPage] handleSubmit failed");
       setErrorPopup("Something went wrong. Please try again later.");
     } finally {
       setModalOpen(false);

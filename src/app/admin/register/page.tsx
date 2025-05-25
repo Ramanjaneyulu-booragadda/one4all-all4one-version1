@@ -22,6 +22,7 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { useTheme } from "@/context/ThemeContext";
+import { logError } from "@/utils/logError";
 
 // Constants/utilities (make sure these exist or replace with mock data)
 import {
@@ -141,20 +142,19 @@ export default function RegisterPage() {
       }
 
       const registrationDetails = result.message[0].RegistrationDetails;
-      
       setSuccessData({
         emailid: registrationDetails.emailid,
         MemberID: registrationDetails.MemberID,
         Mobile: registrationDetails.Mobile,
-      }); // ✅ Save data
+      }); //  Save data
       setToastType("success");
-      setToastMessage("🎉 Admin Registration successful!");
+      setToastMessage("\ud83c\udf89 Admin Registration successful!");
       setShowSuccess(true);
     } catch (error) {
-      console.error("Registration failed:", error);
+      logError(error, "[AdminRegisterPage] submitRegistration failed");
       setToastType("error");
       setToastMessage(
-        "⚠️ Registration failed. Please check the form and try again."
+        "\u26a0\ufe0f Registration failed. Please check the form and try again."
       );
       setShowError(true);
     }
