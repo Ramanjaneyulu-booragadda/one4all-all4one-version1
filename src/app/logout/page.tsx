@@ -3,18 +3,18 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { clearTokens } from "@/utils/tokenService"; // ✅ Custom token cleanup
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut } from "lucide-react";
 
 export default function LogoutPage() {
   const router = useRouter();
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    clearTokens(); // ✅ Clear both user and client tokens from memory
-    // Optionally clear any app-level state, Redux, etc. here
-    router.push("/login"); // ✅ Redirect to login page
+  const handleLogout = async () => {
+    await logout(); // Await logout to ensure state is cleared
+    router.push("/login");
   };
 
   return (

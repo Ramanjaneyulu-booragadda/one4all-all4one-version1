@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { logError } from "@/utils/logError";
+import { baseApiURL } from "@/utils/constants";
 
 // ----------------------------------------------------------------------------------
 // Type for Help Requests
@@ -65,7 +66,7 @@ export default function GiveHelpPage() {
     if (!memberId) return;
     try {
       const res = await authFetch(
-        `http://localhost:9090/api/dashboard/summary/${memberId}`,
+        `${baseApiURL}/dashboard/summary/${memberId}`,
         { method: "GET" },
         true
       );
@@ -81,7 +82,7 @@ export default function GiveHelpPage() {
     if (!memberId) return;
     try {
       const response = await authFetch(
-        `http://localhost:9090/api/${memberId}/upliners`,
+        `${baseApiURL}/${memberId}/upliners`,
         { method: "GET" },
         true
       );
@@ -136,7 +137,7 @@ export default function GiveHelpPage() {
     });
 
     try {
-      const response = await authFetch("http://localhost:9090/api/help/give", {
+      const response = await authFetch(`${baseApiURL}/help/give`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body,

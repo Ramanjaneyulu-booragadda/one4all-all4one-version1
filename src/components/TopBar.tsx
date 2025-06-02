@@ -20,10 +20,9 @@ export function TopBar() {
   const { logout } = useAuth(); // logout method from AuthContext
 
   // Handle logout: clear tokens and redirect to login
-  const handleLogout = () => {
-    clearTokens(); // clears both client & user tokens
-    logout(); // optional: clear user state from context
-    router.push("/logout"); // redirect to logout page
+  const handleLogout = async () => {
+    await logout(); // clears tokens and context state
+    router.push("/login"); // redirect to login page
   };
 
   return (

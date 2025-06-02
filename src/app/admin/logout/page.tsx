@@ -1,9 +1,20 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LogoutPage() {
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout(); // Clears tokens and context state
+    router.push("/admin/login");
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-lg">
@@ -58,12 +69,13 @@ export default function LogoutPage() {
           <Link href="/dashboard">
             <Button variant="outline">Cancel</Button>
           </Link>
-          <Link href="/">
-            <Button className="bg-red-600 text-white hover:bg-red-700">
-              <LogOut className="mr-2 h-4 w-4" />
-              Log Out
-            </Button>
-          </Link>
+          <Button
+            className="bg-red-600 text-white hover:bg-red-700"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Log Out
+          </Button>
         </CardFooter>
       </Card>
     </div>

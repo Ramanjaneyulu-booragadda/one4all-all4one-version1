@@ -7,8 +7,10 @@ import { Toast } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { profileUrl } from "@/utils/constants";
 import { logError } from "@/utils/logError";
+import { useRouter } from "next/navigation";
 
 export default function MyAccountPage() {
+  const router = useRouter();
   const authFetch = useAuthFetch();
   const { memberId } = useAuth();
   const [formData, setFormData] = useState({
@@ -26,6 +28,10 @@ export default function MyAccountPage() {
   const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
+    if (!memberId) {
+      router.replace("/login");
+      return;
+    }
     const fetchAccountDetails = async () => {
       try {
         const response = await authFetch(

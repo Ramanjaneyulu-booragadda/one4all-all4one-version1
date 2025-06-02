@@ -5,7 +5,10 @@ import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 import { ToastContainer } from "react-toastify";
-
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

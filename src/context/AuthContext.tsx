@@ -108,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * --------
    * Clears all tokens and member ID on user logout or session expiry.
    */
-  const logout = () => {
+  const logout = async () => {
     clearTokens(); // Removes all tokens from tokenService
     setUserToken(null);
     setMemberId(null);
