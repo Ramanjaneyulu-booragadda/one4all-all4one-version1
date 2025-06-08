@@ -471,8 +471,20 @@ export const viewOrgchart_dummyData = [
     referralAmount: "NA",
   },
 ];
-// Dynamically set baseURL from environment variable if available, else fallback to localhost
-export const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:9090";
+// utils/config.js or wherever config is defined
+declare global {
+  interface Window {
+    _env_?: {
+      API_BASE_URL?: string;
+      [key: string]: any;
+    };
+  }
+}
+
+const apiBase = (typeof window !== 'undefined' && window._env_?.API_BASE_URL)
+  || process.env.NEXT_PUBLIC_API_URL
+  || "http://localhost:9090";
+export const baseURL = apiBase;
 export const baseApiURL = `${baseURL}/api`;
 export const loginUrl = `${baseApiURL}/login`;
 export const adminLoginUrl = `${baseApiURL}/admin/login`;
