@@ -481,9 +481,8 @@ declare global {
   }
 }
 
-const apiBase = (typeof window !== 'undefined' && window._env_?.API_BASE_URL)
-  || process.env.NEXT_PUBLIC_API_URL
-  || "http://localhost:9090";
+const apiBase = 'http://api.one4all-all4one.com:8080'
+//const apiBaselocal = "http://localhost:9090";  
 export const baseURL = apiBase;
 export const baseApiURL = `${baseURL}/api`;
 export const loginUrl = `${baseApiURL}/login`;
