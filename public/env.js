@@ -1,1 +1,1 @@
-window._env_ = { API_BASE_URL: 'http://13.202.212.226:8080' };
+window._env_ = { API_BASE_URL: 'http://api.one4all-all4one.com:8080' };
