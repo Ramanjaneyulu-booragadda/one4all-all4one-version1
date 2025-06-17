@@ -37,7 +37,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  output: 'export',
+  // output: 'export', // Commented out to enable SSR/dev server
 };
 
 module.exports = nextConfig;

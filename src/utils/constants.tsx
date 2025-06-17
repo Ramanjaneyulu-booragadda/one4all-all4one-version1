@@ -481,8 +481,8 @@ declare global {
   }
 }
 
-const apiBase = 'http://api.one4all-all4one.com:8080'
-//const apiBaselocal = "http://localhost:9090";  
+//const apiBase = 'http://api.one4all-all4one.com:8080'
+const apiBase = "http://localhost:9090";  
 export const baseURL = apiBase;
 export const baseApiURL = `${baseURL}/api`;
 export const loginUrl = `${baseApiURL}/login`;
@@ -493,3 +493,5 @@ export const ONE4ALL_USER_RO = "ONE4ALL_USER_RO";
 export const ONE4ALL_ADMIN_RW = "ONE4ALL_ADMIN_RW";
 export const defaultRoute= "/dashboard/my-account";
 export const profileUrl= `${baseApiURL}/member/profile`;
+export const resetPasswordRequestUrl = `${baseApiURL}/reset-password-request`;
+export const resetPasswordConfirmUrl = `${baseApiURL}/reset-password/confirm`;
