@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Toast } from "@/components/ui/Toast";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -11,8 +11,6 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 
 export default function ResetPasswordConfirmPage() {
   const router = useRouter();
-  const params = useParams();
-  const token = typeof params?.token === "string" ? params.token : Array.isArray(params?.token) ? params.token[0] : "";
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +24,7 @@ export default function ResetPasswordConfirmPage() {
     setValidationError("");
     setShowDialog(false);
     setDialogMsg("");
+    const token = new URLSearchParams(window.location.search).get("token");
     if (!token) {
       setValidationError("Invalid or missing reset token.");
       return;

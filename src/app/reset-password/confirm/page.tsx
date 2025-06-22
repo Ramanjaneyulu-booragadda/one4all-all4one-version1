@@ -4,7 +4,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { Toast } from "@/components/ui/Toast";
 import TextField from "@mui/material/TextField";
@@ -14,10 +14,8 @@ import { getResetPasswordConfirmUrl } from "@/utils/constants";
 
 export default function ResetPasswordConfirmPage() {
   const router = useRouter();
-  // Use useParams to get the token from the dynamic route
-  const params = useParams();
-  // If the route is /reset-password/confirm/[token], params.token will be available
-  const token = typeof params?.token === "string" ? params.token : Array.isArray(params?.token) ? params.token[0] : "";
+  const searchParams = useSearchParams();
+  const token = searchParams?.get("token") || "";
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
