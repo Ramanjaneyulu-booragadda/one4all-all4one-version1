@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { Toast } from "@/components/ui/Toast";
@@ -12,7 +12,15 @@ import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
 import { getResetPasswordConfirmUrl } from "@/utils/constants";
 
-export default function ResetPasswordConfirmPage() {
+export default function ResetPasswordConfirmPageWrapper() {
+  return (
+    <Suspense>
+      <ResetPasswordConfirmPage />
+    </Suspense>
+  );
+}
+
+function ResetPasswordConfirmPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams?.get("token") || "";
