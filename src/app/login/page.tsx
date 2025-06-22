@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthFetch } from "../../hooks/useAuthFetch";
 import { useAuth } from "../../context/AuthContext";
-import { loginUrl, defaultRoute } from "../../utils/constants";
+import { getLoginUrl, defaultRoute } from "../../utils/constants";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
@@ -40,7 +40,8 @@ export default function LoginPage() {
     setError(null); // clear previous errors
     if (formData.ofaMemberId !== "" || formData.password !== "") {
       try {
-        //  Use authFetch to include client token in headers
+        // Use async getLoginUrl
+        const loginUrl = await getLoginUrl();
         const response = await authFetch(
           loginUrl,
           {

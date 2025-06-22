@@ -6,6 +6,8 @@
     "dev": "next dev -H 0.0.0.0 --turbopack",
     "build": "next build",
     "start": "next start",
+    "export": "next export",
+    "dev:https": "NODE_ENV=development node server.js",
     "lint": "bunx biome lint --write && bunx tsc --noEmit",
     "format": "bunx biome format --write"
   },
@@ -29,6 +31,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-toastify": "^11.0.5",
+    "reactflow": "^11.11.4",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7"

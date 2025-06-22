@@ -17,7 +17,7 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner"; // ✅ Using 'sonner' or your toast lib
 import { logError } from "@/utils/logError";
-import { baseApiURL } from "@/utils/constants";
+import { getBaseApiUrl } from "@/utils/constants";
 
 interface ReceivedHelp {
   id: string;
@@ -62,6 +62,7 @@ export default function ReceiveHelpPage() {
     setLoading(true);
     setError(null);
     try {
+      const baseApiURL = await getBaseApiUrl();
       const response = await authFetch(
         `${baseApiURL}/help/receive-help/${memberId}`,
         { method: "GET" },
@@ -130,6 +131,7 @@ export default function ReceiveHelpPage() {
     if (!selected || !comments) return;
 
     try {
+      const baseApiURL = await getBaseApiUrl();
       const response = await authFetch(
         `${baseApiURL}/help/verify`,
         {

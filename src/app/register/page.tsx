@@ -28,9 +28,9 @@ import {
   GENDER_OPTIONS,
   NATIONALITY_OPTIONS,
   INITIAL_VALUES,
-  registrationUrl,
   ONE4ALL_USER_RO,
   ONE4ALL_ADMIN_RW,
+  getRegistrationUrl,
 } from "../../utils/constants";
 import { validationUtils } from "../../utils/validationUtils";
 import { useAuthFetch } from "../../hooks/useAuthFetch";
@@ -53,9 +53,9 @@ interface FormData {
 export default function RegisterPage() {
   const { theme } = useTheme(); // To get the current theme
   const pathname = usePathname(); // 👈 Used to infer "user" vs "admin"
-  const role = pathname.startsWith("/admin")
-    ? ONE4ALL_ADMIN_RW
-    : ONE4ALL_USER_RO; // 🔄 Dynamic role
+  // Fix: ensure pathname is a string before calling startsWith
+  const isAdminPath = typeof pathname === 'string' && pathname.startsWith('/admin');
+  const role = isAdminPath ? ONE4ALL_ADMIN_RW : ONE4ALL_USER_RO; // 🔄 Dynamic role
   const authFetch = useAuthFetch();
   const params = useParams();
   const ref = (params as any)?.ref || "";
@@ -104,12 +104,13 @@ export default function RegisterPage() {
 
   const submitRegistration = async (data: FormData) => {
     try {
+      const registrationUrl = await getRegistrationUrl();
       const response = await authFetch(
         registrationUrl,
         {
           method: "POST",
           headers: {
-            roles: role, //  This is your custom header
+            roles: role, //  This is your custom header
           },
           body: JSON.stringify({
             ofaFullName: data.fullName,
@@ -125,7 +126,6 @@ export default function RegisterPage() {
             ofaCreatedDt: new Date().toISOString(),
             ofaUpdatedBy: "user",
             ofaUpdatedDt: new Date().toISOString(),
-            ofaIsDeleted: 0,
           }),
         },
         false

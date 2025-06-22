@@ -19,7 +19,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { ROLES } from "@/utils/roles";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useAuth } from "@/context/AuthContext";
-import { adminLoginUrl } from "@/utils/constants";
+import { getAdminLoginUrl } from "@/utils/constants";
 import { logError } from "@/utils/logError";
 
 export default function LoginPage() {
@@ -43,7 +43,8 @@ export default function LoginPage() {
     setError(null); // clear previous errors
     if (formData.ofaMemberId !== "" || formData.password !== "") {
       try {
-        //  Use authFetch to include client token in headers
+        // Use async getAdminLoginUrl
+        const adminLoginUrl = await getAdminLoginUrl();
         const response = await authFetch(
           adminLoginUrl,
           {
@@ -53,7 +54,7 @@ export default function LoginPage() {
               Accept: "application/json",
             },
             body: JSON.stringify({
-              ofaMemberId: formData.ofaMemberId, //  direct mapping
+              ofaMemberId: formData.ofaMemberId, // direct mapping
               ofaPassword: formData.password,
             }),
           },

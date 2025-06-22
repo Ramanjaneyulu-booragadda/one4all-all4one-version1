@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
-import { baseApiURL } from "@/utils/constants";
+import { getBaseApiUrl } from "@/utils/constants";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 
@@ -28,6 +28,7 @@ export default function AddUser({ selectedNode, setSelectedNode }: AddUserProps)
     }
 
     try {
+      const baseApiURL = await getBaseApiUrl();
       const referrerId = selectedNode?.id;
       const memberId = newMemberId.split(" ")[0]; // Extract only the memberId
 
@@ -58,6 +59,7 @@ export default function AddUser({ selectedNode, setSelectedNode }: AddUserProps)
   };
 
   const unassignedMembers = async () => {
+    const baseApiURL = await getBaseApiUrl();
     const res = await authFetch(
       `${baseApiURL}/unassigned-members?page=0&size=50`,
       { method: "GET" },

@@ -27,7 +27,7 @@ import "reactflow/dist/style.css";
 import { CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
-import { baseApiURL } from "@/utils/constants";
+import { getBaseApiUrl } from "@/utils/constants";
 import { ROLES } from "@/utils/roles";
 import { hasRole } from "@/utils/roleUtils";
 
@@ -183,6 +183,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
     }
 
     try {
+      const baseApiURL = await getBaseApiUrl();
       const res = await authFetch(`${baseApiURL}/addreferer`, {
         method: "POST",
         body: JSON.stringify({

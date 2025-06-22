@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Toast } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
-import { profileUrl } from "@/utils/constants";
+import { getProfileUrl } from "@/utils/constants";
 import { logError } from "@/utils/logError";
 import { useRouter } from "next/navigation";
 
@@ -34,6 +34,7 @@ export default function MyAccountPage() {
     }
     const fetchAccountDetails = async () => {
       try {
+        const profileUrl = await getProfileUrl();
         const response = await authFetch(
           `${profileUrl}/${memberId}`,
           { method: "GET" },
@@ -72,6 +73,7 @@ export default function MyAccountPage() {
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
+      const profileUrl = await getProfileUrl();
       const response = await authFetch(`${profileUrl}/${memberId}`, {
         method: "PUT",
         body: JSON.stringify(formData),

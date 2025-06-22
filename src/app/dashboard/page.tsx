@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import TotalMembersPage from "./My-Team/page";
 import { logError } from "@/utils/logError";
-import { baseApiURL } from "@/utils/constants";
+import { getBaseApiUrl } from "@/utils/constants";
 
 export default function DashboardPage() {
   const authFetch = useAuthFetch();
@@ -40,6 +40,7 @@ export default function DashboardPage() {
 
     const fetchGiveHelpStats = async () => {
       try {
+        const baseApiURL = await getBaseApiUrl();
         const res = await authFetch(
           `${baseApiURL}/dashboard/summary/${memberId}`,
           { method: "GET" },
@@ -54,6 +55,7 @@ export default function DashboardPage() {
 
     const fetchReceiveHelpStats = async () => {
       try {
+        const baseApiURL = await getBaseApiUrl();
         const res = await authFetch(
           `${baseApiURL}/help/receive-help/${memberId}`,
           { method: "GET" },
@@ -176,6 +178,7 @@ function GiveHelpSection() {
 
     const fetchGiveHelpData = async () => {
       try {
+        const baseApiURL = await getBaseApiUrl();
         const response = await authFetch(
           `${baseApiURL}/${memberId}/upliners`,
           { method: "GET" },
@@ -272,6 +275,7 @@ function ReceiveHelpSection() {
 
     const fetchReceiveHelpData = async () => {
       try {
+        const baseApiURL = await getBaseApiUrl();
         const response = await authFetch(
           `${baseApiURL}/help/receive-help/${memberId}`,
           { method: "GET" },

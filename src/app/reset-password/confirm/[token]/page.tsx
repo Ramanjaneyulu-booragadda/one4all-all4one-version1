@@ -6,7 +6,7 @@ import { Toast } from "@/components/ui/Toast";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
-import { resetPasswordConfirmUrl } from "@/utils/constants";
+import { getResetPasswordConfirmUrl } from "@/utils/constants";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 
 export default function ResetPasswordConfirmPage() {
@@ -40,6 +40,7 @@ export default function ResetPasswordConfirmPage() {
     }
     setLoading(true);
     try {
+      const resetPasswordConfirmUrl = await getResetPasswordConfirmUrl();
       // Use authFetch with useUserToken set to false (only client token)
       const response = await authFetch(
         resetPasswordConfirmUrl,

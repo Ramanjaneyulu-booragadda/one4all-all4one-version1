@@ -29,7 +29,7 @@ import {
   GENDER_OPTIONS,
   NATIONALITY_OPTIONS,
   INITIAL_VALUES,
-  adminRegistrationUrl
+  getAdminRegistrationUrl
 } from "../../../utils/constants";
 import { validationUtils } from "../../../utils/validationUtils";
 // Ensure the correct path or create the Toast component if missing
@@ -72,11 +72,13 @@ export default function RegisterPage() {
     } | null>(null);
 
   const validateForm = (data: FormData): string[] => {
+    // Always validate mobileNo as 10 digits (without +91)
+    const mobileNo = data.mobileNo.startsWith('+91') ? data.mobileNo.slice(3) : data.mobileNo;
     const errors = [
       ...validationUtils.validateGender(data.gender || ""),
       ...validationUtils.validateAge(data.dob || ""),
       ...validationUtils.validateNumber(data.pincode || "", "Pincode"),
-      ...validationUtils.validateNumber(data.mobileNo || "", "Mobile Number"),
+      ...validationUtils.validateNumber(mobileNo, "Mobile Number"), // expect 10 digits
       ...validationUtils.validatePasswordMatch(
         data.password || "",
         data.confirmPassword || ""
@@ -99,13 +101,19 @@ export default function RegisterPage() {
     }
   };
 
-  const role = pathname.startsWith("/admin")
-    ? "ONE4ALL_ADMIN_RW"
-    : "ONE4ALL_USER_RO"; // 🔄 Dynamic role determination based on path
+  // Fix: ensure pathname is a string before calling startsWith
+  const isAdminPath = typeof pathname === 'string' && pathname.startsWith('/admin');
+  const role = isAdminPath ? "ONE4ALL_ADMIN_RW" : "ONE4ALL_USER_RO"; // 🔄 Dynamic role determination based on path
 
   const submitRegistration = async (data: FormData) => {
     try {
-      const response = await authFetch(`${adminRegistrationUrl}`, {
+      // Always send mobileNo with +91 prefix
+      let mobileNo = data.mobileNo;
+      if (!mobileNo.startsWith('+91')) {
+        mobileNo = '+91' + mobileNo.replace(/^0+/, '');
+      }
+      const adminRegistrationUrl = await getAdminRegistrationUrl();
+      const response = await authFetch(adminRegistrationUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +125,7 @@ export default function RegisterPage() {
           ofaDob: data.dob,
           ofaAddress: data.address,
           ofaPincode: data.pincode,
-          ofaMobileNo: data.mobileNo,
+          ofaMobileNo: mobileNo,
           ofaEmail: data.email,
           ofaNationality: data.nationality,
           ofaPassword: data.password,

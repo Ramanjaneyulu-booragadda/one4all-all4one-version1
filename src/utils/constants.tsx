@@ -471,27 +471,47 @@ export const viewOrgchart_dummyData = [
     referralAmount: "NA",
   },
 ];
-// utils/config.js or wherever config is defined
-declare global {
-  interface Window {
-    _env_?: {
-      API_BASE_URL?: string;
-      [key: string]: any;
-    };
-  }
+// Use runtime config for API base URL (works for static S3 hosting)
+import { getRuntimeConfig } from "./runtimeConfig";
+
+export async function getApiBaseUrl() {
+  const config = await getRuntimeConfig();
+  return config.API_BASE_URL || "https://localhost:9090";
 }
 
-//const apiBase = 'http://api.one4all-all4one.com:8080'
-const apiBase = "http://localhost:9090";  
-export const baseURL = apiBase;
-export const baseApiURL = `${baseURL}/api`;
-export const loginUrl = `${baseApiURL}/login`;
-export const adminLoginUrl = `${baseApiURL}/admin/login`;
-export const registrationUrl = `${baseApiURL}/register`;
-export const adminRegistrationUrl = `${baseApiURL}/admin/register`;
+export async function getBaseApiUrl() {
+  const baseURL = await getApiBaseUrl();
+  return `${baseURL}/api`;
+}
+
+export async function getLoginUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/login`;
+}
+export async function getAdminLoginUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/admin/login`;
+}
+export async function getRegistrationUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/register`;
+}
+export async function getAdminRegistrationUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/admin/register`;
+}
 export const ONE4ALL_USER_RO = "ONE4ALL_USER_RO";
 export const ONE4ALL_ADMIN_RW = "ONE4ALL_ADMIN_RW";
 export const defaultRoute= "/dashboard/my-account";
-export const profileUrl= `${baseApiURL}/member/profile`;
-export const resetPasswordRequestUrl = `${baseApiURL}/reset-password-request`;
-export const resetPasswordConfirmUrl = `${baseApiURL}/reset-password/confirm`;
+export async function getProfileUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/member/profile`;
+}
+export async function getResetPasswordRequestUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/reset-password-request`;
+}
+export async function getResetPasswordConfirmUrl() {
+  const baseApiURL = await getBaseApiUrl();
+  return `${baseApiURL}/reset-password/confirm`;
+}

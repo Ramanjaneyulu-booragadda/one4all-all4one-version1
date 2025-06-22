@@ -17,7 +17,7 @@ import { hasAnyRole } from "@/utils/roleUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Download, Search } from "lucide-react";
-import { baseApiURL } from "@/utils/constants";
+import { getBaseApiUrl } from "@/utils/constants";
 import { ROLES } from "@/utils/roles";
 
 export default function MyTeamsPage() {
@@ -41,6 +41,7 @@ export default function MyTeamsPage() {
   const fetchHierarchy = useCallback(async () => {
     if (!memberId) return;
     try {
+      const baseApiURL = await getBaseApiUrl();
       const res = await authFetch(
         `${baseApiURL}/${memberId}/downlinerHierarchy`,
         {},

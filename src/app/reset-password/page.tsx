@@ -6,7 +6,7 @@ import { Toast } from "@/components/ui/Toast";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { toast } from "react-toastify";
-import { resetPasswordRequestUrl } from "@/utils/constants";
+import { getResetPasswordRequestUrl } from "@/utils/constants";
 
 export default function ResetPasswordRequestPage() {
   const [input, setInput] = useState("");
@@ -49,6 +49,7 @@ export default function ResetPasswordRequestPage() {
       }
     }
     try {
+      const resetPasswordRequestUrl = await getResetPasswordRequestUrl();
       const body = input.includes("@")
         ? { memberId, email: input }
         : { memberId, mobile: input };
